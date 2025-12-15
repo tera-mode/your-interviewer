@@ -337,7 +337,6 @@ interface FixedUserData {
   - [ ] SNSプロフィール（50〜100字）
 - [ ] インタビュー詳細ページ（/mypage/interview/[id]）
 - [ ] シェア機能
-- [ ] LINE認証
 
 ### 📋 Phase 3（予定）
 - [ ] メール送信機能（Brevo）
