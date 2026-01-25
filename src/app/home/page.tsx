@@ -41,22 +41,29 @@ export default function Home() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-purple-50 to-white">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-warm">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -right-40 top-20 h-96 w-96" />
+      <div className="gradient-orb gradient-orb-yellow absolute -left-40 bottom-20 h-80 w-80" />
+
       {/* ユーザーヘッダー */}
       <UserHeader showHomeButton={false} />
 
-      <div className="flex flex-1 items-center justify-center px-4 py-12">
+      <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-12">
         <main className="flex w-full max-w-4xl flex-col items-center gap-12 text-center">
           {/* ヘッダー */}
           <div className="flex flex-col gap-4">
-            <h1 className="text-5xl font-bold text-gray-900 md:text-6xl">
+            <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
               ようこそ
             </h1>
             <p className="text-xl text-gray-600 md:text-2xl">
@@ -69,9 +76,9 @@ export default function Home() {
             {/* 新しいインタビューを始める */}
             <button
               onClick={handleStartInterview}
-              className="group flex flex-col items-center gap-4 rounded-2xl bg-white p-8 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
+              className="glass-card group flex flex-col items-center gap-4 rounded-3xl p-8 transition-all hover:scale-[1.02] hover-glow"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-purple-100 text-4xl transition-colors group-hover:bg-purple-200">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-orange-200 to-amber-200 text-4xl shadow-md transition-all group-hover:from-orange-300 group-hover:to-amber-300 group-hover:shadow-lg">
                 💬
               </div>
               <div>
@@ -87,9 +94,9 @@ export default function Home() {
             {/* マイページ */}
             <button
               onClick={handleGoToMyPage}
-              className="group flex flex-col items-center gap-4 rounded-2xl bg-white p-8 shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
+              className="glass-card group flex flex-col items-center gap-4 rounded-3xl p-8 transition-all hover:scale-[1.02] hover-glow"
             >
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-4xl transition-colors group-hover:bg-blue-200">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-yellow-200 text-4xl shadow-md transition-all group-hover:from-amber-300 group-hover:to-yellow-300 group-hover:shadow-lg">
                 📝
               </div>
               <div>
@@ -107,16 +114,16 @@ export default function Home() {
 
           {/* ゲストユーザー向けメッセージ */}
           {user.isAnonymous && (
-            <div className="w-full max-w-2xl rounded-xl bg-blue-50 p-6">
-              <h3 className="mb-2 text-lg font-semibold text-blue-900">
+            <div className="glass-card w-full max-w-2xl rounded-2xl p-6 text-left">
+              <h3 className="mb-2 text-lg font-semibold text-orange-700">
                 ゲストモードでご利用中
               </h3>
-              <p className="mb-4 text-sm text-blue-800">
+              <p className="mb-4 text-sm text-gray-600">
                 ログインすることで、インタビュー履歴を永続的に保存できます。
               </p>
               <button
                 onClick={() => router.push('/login')}
-                className="rounded-full bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                className="btn-gradient-secondary rounded-full px-6 py-2 text-sm font-semibold text-white shadow-md"
               >
                 ログインする
               </button>

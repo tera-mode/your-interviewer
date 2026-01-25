@@ -40,40 +40,45 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-hero px-4 py-12">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -left-32 -top-32 h-96 w-96" />
+      <div className="gradient-orb gradient-orb-yellow absolute -right-32 top-1/4 h-80 w-80" />
+      <div className="gradient-orb gradient-orb-coral absolute -bottom-32 left-1/4 h-72 w-72" />
+
       {/* マイページボタン（ログインユーザーのみ） */}
       {user && !user.isAnonymous && (
-        <div className="absolute right-4 top-4">
+        <div className="absolute right-4 top-4 z-10">
           <button
             onClick={() => router.push('/mypage')}
-            className="rounded-full bg-purple-600 px-6 py-3 font-semibold text-white transition-all hover:bg-purple-700"
+            className="btn-gradient-primary rounded-full px-6 py-3 font-semibold text-white shadow-lg"
           >
             マイページ
           </button>
         </div>
       )}
 
-      <main className="flex w-full max-w-4xl flex-col items-center gap-12 text-center">
+      <main className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-12 text-center">
         {/* ヘッダー */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-5xl font-bold text-gray-900 md:text-6xl">
+          <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
             あなたのインタビュワー
           </h1>
-          <p className="text-xl text-gray-600 md:text-2xl">
+          <p className="text-xl text-gray-700 md:text-2xl">
             AIがあなたを有名人のようにインタビュー
           </p>
         </div>
 
         {/* サービス説明 */}
-        <div className="flex max-w-2xl flex-col gap-6 rounded-2xl bg-white p-8 shadow-lg">
-          <h2 className="text-2xl font-semibold text-gray-800">
+        <div className="glass-card flex max-w-2xl flex-col gap-6 rounded-3xl p-8 shadow-xl">
+          <h2 className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-2xl font-semibold text-transparent">
             魅力を引き出すインタビュー体験
           </h2>
           <div className="text-left text-gray-700">
             <p className="mb-4">
               AIインタビュワーがあなたの魅力を引き出し、以下のコンテンツを生成します：
             </p>
-            <ul className="list-inside list-disc space-y-2">
+            <ul className="list-inside list-disc space-y-2 text-gray-600">
               <li>雑誌風のインタビュー記事</li>
               <li>就活・転職で使える自己PR文</li>
               <li>マッチングアプリ用プロフィール</li>
@@ -87,26 +92,26 @@ export default function Home() {
           <button
             onClick={handleGuestStart}
             disabled={isLoading}
-            className="rounded-full bg-blue-600 px-8 py-4 text-lg font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="btn-gradient-primary rounded-full px-8 py-4 text-lg font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? '準備中...' : 'ゲストとして始める'}
           </button>
           <button
             onClick={() => router.push('/login?mode=signup')}
-            className="rounded-full border-2 border-blue-600 bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-md transition-all hover:bg-blue-50 hover:shadow-lg"
+            className="gradient-border rounded-full bg-white px-8 py-4 text-lg font-semibold text-orange-600 shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
           >
             新規会員登録して始める
           </button>
           <button
             onClick={handleLoginStart}
-            className="text-gray-600 underline hover:text-gray-800"
+            className="text-gray-600 underline decoration-orange-300 underline-offset-4 hover:text-orange-600 hover:decoration-orange-500"
           >
             ログイン
           </button>
         </div>
 
         {/* 注意事項 */}
-        <div className="max-w-2xl text-sm text-gray-500">
+        <div className="glass max-w-2xl rounded-2xl p-4 text-sm text-gray-600">
           <p>
             ゲスト利用の場合、データはCookieに保存されます。Cookieを削除するとデータが消失しますのでご注意ください。
           </p>

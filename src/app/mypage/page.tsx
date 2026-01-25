@@ -109,30 +109,37 @@ export default function MyPage() {
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white px-4 py-12">
-      <main className="mx-auto max-w-6xl">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-warm px-4 py-12">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -right-40 top-20 h-96 w-96" />
+      <div className="gradient-orb gradient-orb-yellow absolute -left-40 bottom-40 h-80 w-80" />
+
+      <main className="relative z-10 mx-auto max-w-6xl">
         {/* ゲストユーザー向けログイン案内 */}
         {isGuest && (
-          <div className="mb-8 rounded-2xl bg-blue-50 p-6 shadow-lg">
+          <div className="glass-card mb-8 rounded-3xl p-6">
             <div className="flex flex-col items-center gap-4 text-center md:flex-row md:justify-between md:text-left">
               <div>
-                <h2 className="text-xl font-bold text-blue-800">
+                <h2 className="text-xl font-bold text-orange-700">
                   ログインしてインタビューを保存しよう
                 </h2>
-                <p className="mt-2 text-blue-600">
+                <p className="mt-2 text-gray-600">
                   ログインすると、インタビュー履歴を永続的に保存できます
                 </p>
               </div>
               <button
                 onClick={() => router.push('/login')}
-                className="whitespace-nowrap rounded-full bg-blue-600 px-8 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+                className="btn-gradient-secondary whitespace-nowrap rounded-full px-8 py-3 font-semibold text-white shadow-md"
               >
                 ログインして保存
               </button>
@@ -143,7 +150,9 @@ export default function MyPage() {
         {/* ヘッダー */}
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">マイページ</h1>
+            <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-4xl font-bold text-transparent">
+              マイページ
+            </h1>
             <p className="mt-2 text-gray-600">
               {isGuest ? 'ゲストユーザー' : user.email}
             </p>
@@ -151,13 +160,13 @@ export default function MyPage() {
           <div className="flex gap-4">
             <button
               onClick={handleNewInterview}
-              className="rounded-full bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-700"
+              className="btn-gradient-primary rounded-full px-6 py-3 font-semibold text-white shadow-md"
             >
               新しいインタビュー
             </button>
             <button
               onClick={handleSignOut}
-              className="rounded-full border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="rounded-full border border-orange-200 bg-white/80 px-6 py-3 font-semibold text-gray-700 backdrop-blur-sm transition-all hover:bg-orange-50"
             >
               ログアウト
             </button>
@@ -165,13 +174,16 @@ export default function MyPage() {
         </div>
 
         {/* インタビュー一覧 */}
-        <div className="rounded-2xl bg-white p-8 shadow-lg">
+        <div className="glass-card rounded-3xl p-8">
           <h2 className="mb-6 text-2xl font-bold text-gray-800">
             過去のインタビュー
           </h2>
 
           {isLoadingInterviews ? (
-            <p className="text-gray-600">読み込み中...</p>
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+              <p className="ml-3 text-gray-600">読み込み中...</p>
+            </div>
           ) : interviews.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 mb-4">
@@ -182,14 +194,14 @@ export default function MyPage() {
               <div className="flex flex-col items-center gap-3">
                 <button
                   onClick={handleNewInterview}
-                  className="rounded-full bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-700"
+                  className="btn-gradient-primary rounded-full px-6 py-3 font-semibold text-white shadow-md"
                 >
                   {isGuest ? 'インタビューを始める' : '最初のインタビューを始める'}
                 </button>
                 {isGuest && (
                   <button
                     onClick={() => router.push('/login')}
-                    className="text-blue-600 underline hover:text-blue-700"
+                    className="text-orange-600 underline decoration-orange-300 underline-offset-4 hover:decoration-orange-500"
                   >
                     ログインして履歴を保存する
                   </button>
@@ -204,11 +216,11 @@ export default function MyPage() {
                 return (
                   <div
                     key={interview.id}
-                    className="cursor-pointer rounded-xl border-2 border-gray-200 bg-white p-6 transition-all hover:border-purple-600 hover:shadow-lg"
+                    className="glass cursor-pointer rounded-2xl p-6 transition-all hover:scale-[1.02] hover-glow"
                     onClick={() => router.push(`/mypage/interview/${interview.id}`)}
                   >
                     {/* 日付 */}
-                    <div className="mb-4 text-sm text-gray-500">
+                    <div className="mb-4 text-sm text-orange-600">
                       {date.toLocaleDateString('ja-JP', {
                         year: 'numeric',
                         month: 'long',
@@ -249,7 +261,7 @@ export default function MyPage() {
 
                     {/* 詳細を見るボタン */}
                     <div className="mt-4 text-center">
-                      <span className="text-sm font-semibold text-purple-600">
+                      <span className="text-sm font-semibold text-orange-600">
                         詳細を見る →
                       </span>
                     </div>
@@ -264,7 +276,7 @@ export default function MyPage() {
         <div className="mt-8 text-center">
           <button
             onClick={() => router.push('/home')}
-            className="text-gray-500 underline hover:text-gray-700"
+            className="text-gray-500 underline decoration-orange-300 underline-offset-4 hover:text-orange-600 hover:decoration-orange-500"
           >
             HOMEに戻る
           </button>

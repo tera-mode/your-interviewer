@@ -240,20 +240,27 @@ export default function Interview() {
 
   if (!interviewer) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-b from-purple-50 to-white">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-warm">
+      {/* 装飾用グラデーションオーブ（薄め） */}
+      <div className="gradient-orb gradient-orb-orange absolute -right-60 top-20 h-96 w-96 opacity-40" />
+      <div className="gradient-orb gradient-orb-yellow absolute -left-60 bottom-20 h-80 w-80 opacity-40" />
+
       {/* ユーザーヘッダー */}
       <UserHeader showHomeButton={false} userNickname={userNickname} />
 
       {/* ステータスバー */}
       {isCompleted && (
-        <div className="border-b bg-green-50 px-4 py-3">
+        <div className="glass border-b border-green-200 px-4 py-3">
           <div className="mx-auto max-w-4xl text-center">
             <span className="text-sm font-semibold text-green-700">
               ✓ インタビュー完了
@@ -273,7 +280,7 @@ export default function Interview() {
       )}
 
       {/* メインコンテンツ（PC版は横並び） */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* メッセージエリア */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-4xl space-y-4">
@@ -285,7 +292,7 @@ export default function Interview() {
               }`}
             >
               {message.role === 'assistant' && interviewer && (
-                <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full">
+                <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-orange-200 shadow-md">
                   <Image
                     src={interviewer.gender === '女性' ? '/image/icon_lady-interviewer.png' : '/image/icon_man-interviewer.png'}
                     alt="インタビュワー"
@@ -297,8 +304,8 @@ export default function Interview() {
               <div
                 className={`max-w-[70%] rounded-2xl px-5 py-3 ${
                   message.role === 'user'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white text-gray-800 shadow-sm'
+                    ? 'chat-bubble-user'
+                    : 'chat-bubble-assistant'
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">
@@ -309,7 +316,7 @@ export default function Interview() {
           ))}
           {isLoading && interviewer && (
             <div className="flex items-start gap-3 justify-start">
-              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full">
+              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-orange-200 shadow-md">
                 <Image
                   src={interviewer.gender === '女性' ? '/image/icon_lady-interviewer.png' : '/image/icon_man-interviewer.png'}
                   alt="インタビュワー"
@@ -317,15 +324,15 @@ export default function Interview() {
                   className="object-cover"
                 />
               </div>
-              <div className="max-w-[70%] rounded-2xl bg-white px-5 py-3 shadow-sm">
+              <div className="chat-bubble-assistant max-w-[70%] rounded-2xl px-5 py-3">
                 <div className="flex gap-2">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
+                  <div className="h-2 w-2 animate-bounce rounded-full bg-orange-400"></div>
                   <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    className="h-2 w-2 animate-bounce rounded-full bg-orange-400"
                     style={{ animationDelay: '0.1s' }}
                   ></div>
                   <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    className="h-2 w-2 animate-bounce rounded-full bg-orange-400"
                     style={{ animationDelay: '0.2s' }}
                   ></div>
                 </div>
@@ -348,7 +355,7 @@ export default function Interview() {
       </div>
 
       {/* 入力エリア */}
-      <div className="border-t bg-white px-4 py-4 shadow-lg">
+      <div className="glass-header relative z-20 px-4 py-4 shadow-lg">
         <div className="mx-auto flex max-w-4xl gap-2">
           <input
             ref={inputRef}
@@ -362,12 +369,12 @@ export default function Interview() {
                 : 'メッセージを入力...'
             }
             disabled={isLoading || isCompleted}
-            className="flex-1 rounded-full border border-gray-300 px-5 py-3 focus:border-purple-500 focus:outline-none disabled:bg-gray-100"
+            className="glass-input flex-1 rounded-full px-5 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none disabled:bg-gray-100 disabled:opacity-60"
           />
           <button
             onClick={handleSendMessage}
             disabled={!inputText.trim() || isLoading || isCompleted}
-            className="rounded-full bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-700 disabled:bg-gray-300"
+            className="btn-gradient-primary rounded-full px-6 py-3 font-semibold text-white shadow-md disabled:opacity-50"
           >
             送信
           </button>

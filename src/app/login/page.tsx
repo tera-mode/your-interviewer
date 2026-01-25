@@ -82,18 +82,25 @@ function LoginContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>読み込み中...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4 py-12">
-      <main className="flex w-full max-w-md flex-col items-center gap-6 text-center">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm px-4 py-12">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
+      <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+
+      <main className="relative z-10 flex w-full max-w-md flex-col items-center gap-6 text-center">
         {/* ロゴ・タイトル */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold text-gray-900">
+          <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-4xl font-bold text-transparent">
             あなたのインタビュワー
           </h1>
           <p className="text-lg text-gray-600">
@@ -103,8 +110,8 @@ function LoginContent() {
 
         {/* ゲストユーザー向けメッセージ */}
         {user && user.isAnonymous && (
-          <div className="w-full rounded-lg bg-blue-50 p-4 text-left">
-            <p className="text-sm text-blue-800">
+          <div className="glass w-full rounded-xl p-4 text-left">
+            <p className="text-sm text-orange-700">
               現在ゲストとしてログインしています。<br />
               ログインすることで、インタビュー履歴を永続的に保存できます。
             </p>
@@ -112,14 +119,14 @@ function LoginContent() {
         )}
 
         {/* メイン認証フォーム */}
-        <div className="w-full rounded-2xl bg-white p-8 shadow-lg">
+        <div className="glass-card w-full rounded-3xl p-8">
           {/* タブ切り替え */}
-          <div className="mb-6 flex gap-2 rounded-lg bg-gray-100 p-1">
+          <div className="mb-6 flex gap-2 rounded-xl bg-orange-100/50 p-1">
             <button
               onClick={() => setMode('login')}
-              className={`flex-1 rounded-md px-4 py-2 font-semibold transition-colors ${
+              className={`flex-1 rounded-lg px-4 py-2 font-semibold transition-all ${
                 mode === 'login'
-                  ? 'bg-white text-blue-600 shadow-sm'
+                  ? 'bg-white text-orange-600 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -127,9 +134,9 @@ function LoginContent() {
             </button>
             <button
               onClick={() => setMode('signup')}
-              className={`flex-1 rounded-md px-4 py-2 font-semibold transition-colors ${
+              className={`flex-1 rounded-lg px-4 py-2 font-semibold transition-all ${
                 mode === 'signup'
-                  ? 'bg-white text-blue-600 shadow-sm'
+                  ? 'bg-white text-orange-600 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -139,7 +146,7 @@ function LoginContent() {
 
           {/* エラーメッセージ */}
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100">
               {error}
             </div>
           )}
@@ -155,7 +162,7 @@ function LoginContent() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                  className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
                   placeholder="山田太郎"
                   required
                 />
@@ -170,7 +177,7 @@ function LoginContent() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
                 placeholder="example@email.com"
                 required
               />
@@ -184,7 +191,7 @@ function LoginContent() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
                 placeholder="6文字以上"
                 required
                 minLength={6}
@@ -194,7 +201,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isSigningIn}
-              className="w-full rounded-full bg-blue-600 px-8 py-3 font-semibold text-white shadow-md transition-all hover:bg-blue-700 disabled:opacity-50"
+              className="btn-gradient-primary w-full rounded-full px-8 py-3 font-semibold text-white shadow-lg disabled:opacity-50"
             >
               {isSigningIn
                 ? '処理中...'
@@ -206,16 +213,16 @@ function LoginContent() {
 
           {/* 区切り線 */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-gray-300"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
             <span className="text-sm text-gray-500">または</span>
-            <div className="h-px flex-1 bg-gray-300"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
           </div>
 
           {/* Googleログインボタン */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
-            className="flex w-full items-center justify-center gap-3 rounded-full border-2 border-gray-300 bg-white px-8 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:opacity-50"
+            className="glass flex w-full items-center justify-center gap-3 rounded-full px-8 py-3 font-semibold text-gray-700 transition-all hover:bg-white/80 hover:shadow-md disabled:opacity-50"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -247,7 +254,7 @@ function LoginContent() {
         {/* 戻るボタン */}
         <button
           onClick={() => router.push('/')}
-          className="text-gray-500 underline hover:text-gray-700"
+          className="text-gray-500 underline decoration-orange-300 underline-offset-4 hover:text-orange-600 hover:decoration-orange-500"
         >
           トップに戻る
         </button>
@@ -258,7 +265,14 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><p>読み込み中...</p></div>}>
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    }>
       <LoginContent />
     </Suspense>
   );

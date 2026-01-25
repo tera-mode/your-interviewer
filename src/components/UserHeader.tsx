@@ -21,11 +21,11 @@ export default function UserHeader({ showHomeButton = true, userNickname }: User
   }
 
   return (
-    <div className="border-b bg-white px-4 py-3 shadow-sm">
+    <div className="glass-header px-4 py-3 shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         {/* ユーザー情報 */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-lg">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-200 to-amber-200 text-lg shadow-sm">
             {userNickname ? '😊' : user.isAnonymous ? '👤' : '👨‍💼'}
           </div>
           <div>
@@ -36,7 +36,7 @@ export default function UserHeader({ showHomeButton = true, userNickname }: User
               <p className="text-xs text-gray-500">一時的なセッション</p>
             )}
             {userNickname && (
-              <p className="text-xs text-gray-500">インタビュー中</p>
+              <p className="text-xs text-orange-600">インタビュー中</p>
             )}
           </div>
         </div>
@@ -46,14 +46,14 @@ export default function UserHeader({ showHomeButton = true, userNickname }: User
           {showHomeButton && (
             <button
               onClick={() => router.push('/home')}
-              className="rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              className="rounded-full border border-orange-200 bg-white/80 px-4 py-2 text-sm font-semibold text-gray-700 backdrop-blur-sm transition-all hover:bg-orange-50 hover:border-orange-300"
             >
               HOME
             </button>
           )}
           <button
             onClick={handleMyPage}
-            className="rounded-full bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+            className="btn-gradient-primary rounded-full px-4 py-2 text-sm font-semibold text-white shadow-md"
           >
             マイページ
           </button>

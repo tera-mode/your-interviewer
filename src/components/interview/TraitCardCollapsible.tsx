@@ -17,19 +17,19 @@ export default function TraitCardCollapsible({
   isLoading = false,
 }: TraitCardCollapsibleProps) {
   return (
-    <div className="border-b bg-gradient-to-b from-purple-50 to-white">
+    <div className="glass border-b border-orange-100">
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-purple-100">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-orange-100/50">
         <div className="flex items-center gap-2">
           <span className="font-bold text-gray-800 text-sm">あなたの特徴</span>
           {traits.length > 0 && (
-            <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+            <span className="rounded-full bg-gradient-to-r from-orange-100 to-amber-100 px-2 py-0.5 text-xs font-medium text-orange-700">
               {traits.length}
             </span>
           )}
           {isLoading && (
-            <div className="flex items-center gap-1 text-xs text-purple-600">
-              <div className="w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+            <div className="flex items-center gap-1 text-xs text-orange-600">
+              <div className="w-3 h-3 border-2 spinner-warm rounded-full animate-spin" />
               <span>分析中</span>
             </div>
           )}
@@ -42,7 +42,7 @@ export default function TraitCardCollapsible({
           <div className="flex items-center justify-center py-4 text-gray-400">
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 spinner-warm rounded-full animate-spin" />
                 <span className="text-sm">特徴を分析中...</span>
               </div>
             ) : (
@@ -59,15 +59,15 @@ export default function TraitCardCollapsible({
               const categoryColors = TRAIT_CATEGORY_COLORS[trait.category];
 
               const highlightClass = isNew
-                ? 'ring-2 ring-purple-400 ring-opacity-60 animate-pulse'
+                ? 'ring-2 ring-orange-400 ring-opacity-60 animate-pulse'
                 : isUpdated
-                ? 'ring-2 ring-green-400 ring-opacity-60'
+                ? 'ring-2 ring-amber-400 ring-opacity-60'
                 : '';
 
               return (
                 <div
                   key={trait.id}
-                  className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-sm ${categoryColors} ${highlightClass}`}
+                  className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-sm backdrop-blur-sm ${categoryColors} ${highlightClass}`}
                 >
                   {trait.icon && <span className="text-base">{trait.icon}</span>}
                   <span className="font-medium">{trait.label}</span>

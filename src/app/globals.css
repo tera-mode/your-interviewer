@@ -1,8 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fffaf5;
+  --foreground: #1a1a1a;
+
+  /* Orange-based warm color palette */
+  --primary-50: #fff7ed;
+  --primary-100: #ffedd5;
+  --primary-200: #fed7aa;
+  --primary-300: #fdba74;
+  --primary-400: #fb923c;
+  --primary-500: #f97316;
+  --primary-600: #ea580c;
+  --primary-700: #c2410c;
+  --primary-800: #9a3412;
+  --primary-900: #7c2d12;
+
+  /* Coral accent */
+  --accent-coral: #ff6b6b;
+  --accent-peach: #ffa07a;
+  --accent-sunset: #ff7f50;
+
+  /* Warm neutrals */
+  --warm-gray-50: #faf9f7;
+  --warm-gray-100: #f5f4f1;
+  --warm-gray-200: #e8e6e1;
+  --warm-gray-300: #d6d3cd;
+  --warm-gray-400: #a8a29e;
+  --warm-gray-500: #78716c;
+  --warm-gray-600: #57534e;
+  --warm-gray-700: #44403c;
+  --warm-gray-800: #292524;
+  --warm-gray-900: #1c1917;
 }
 
 @theme inline {
@@ -14,8 +43,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a1410;
+    --foreground: #f5ebe0;
   }
 }
 
@@ -23,4 +52,137 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.1);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%);
+}
+
+.bg-gradient-sunset {
+  background: linear-gradient(180deg, #fff7ed 0%, #fef3c7 25%, #fed7aa 75%, #fdba74 100%);
+}
+
+.bg-gradient-hero {
+  background: linear-gradient(135deg, #fff7ed 0%, #fef7cd 35%, #fed7aa 70%, #fecaca 100%);
+}
+
+/* Button gradients */
+.btn-gradient-primary {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-primary:hover {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ef4444 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.5);
+}
+
+.btn-gradient-secondary {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-secondary:hover {
+  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px rgba(251, 191, 36, 0.5);
+}
+
+/* Decorative gradient orbs */
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.gradient-orb-orange {
+  background: radial-gradient(circle, #fb923c 0%, transparent 70%);
+}
+
+.gradient-orb-yellow {
+  background: radial-gradient(circle, #fbbf24 0%, transparent 70%);
+}
+
+.gradient-orb-coral {
+  background: radial-gradient(circle, #ff6b6b 0%, transparent 70%);
+}
+
+/* Animated gradient border */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #f97316, #fbbf24, #f97316) border-box;
+  border: 2px solid transparent;
+}
+
+/* Chat bubble styles */
+.chat-bubble-user {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+}
+
+.chat-bubble-assistant {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.1);
+}
+
+/* Loading spinner */
+.spinner-warm {
+  border-color: #fed7aa;
+  border-top-color: #f97316;
+}
+
+/* Transition utilities */
+.transition-warm {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover glow effect */
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
 }

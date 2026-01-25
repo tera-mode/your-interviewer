@@ -21,16 +21,16 @@ export const TRAIT_CATEGORY_LABELS: Record<TraitCategory, string> = {
   other: 'その他',
 };
 
-// カテゴリの色（Tailwind CSS用）
+// カテゴリの色（Tailwind CSS用 - オレンジ暖色系パレット）
 export const TRAIT_CATEGORY_COLORS: Record<TraitCategory, string> = {
-  personality: 'bg-pink-100 text-pink-800 border-pink-200',
-  hobby: 'bg-green-100 text-green-800 border-green-200',
-  skill: 'bg-blue-100 text-blue-800 border-blue-200',
-  work: 'bg-orange-100 text-orange-800 border-orange-200',
-  value: 'bg-purple-100 text-purple-800 border-purple-200',
-  lifestyle: 'bg-teal-100 text-teal-800 border-teal-200',
-  experience: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  other: 'bg-gray-100 text-gray-800 border-gray-200',
+  personality: 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border-orange-200',
+  hobby: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-200',
+  skill: 'bg-gradient-to-r from-orange-100 to-rose-100 text-orange-700 border-orange-200',
+  work: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-200',
+  value: 'bg-gradient-to-r from-rose-100 to-orange-100 text-rose-700 border-rose-200',
+  lifestyle: 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200',
+  experience: 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200',
+  other: 'bg-gradient-to-r from-stone-100 to-amber-50 text-stone-700 border-stone-200',
 };
 
 // 強弱キーワードの例

@@ -23,9 +23,9 @@ export default function TraitCard({
 
   // ハイライトのスタイル
   const highlightClass = isNew
-    ? 'ring-2 ring-purple-400 ring-opacity-50 animate-pulse'
+    ? 'ring-2 ring-orange-400 ring-opacity-60 animate-pulse'
     : isUpdated
-    ? 'ring-2 ring-green-400 ring-opacity-50'
+    ? 'ring-2 ring-amber-400 ring-opacity-60'
     : '';
 
   if (size === 'mini') {

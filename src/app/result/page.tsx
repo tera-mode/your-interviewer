@@ -114,10 +114,14 @@ function ResultContent() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white">
-        <div className="text-center">
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm">
+        {/* 装飾用グラデーションオーブ */}
+        <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
+        <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+
+        <div className="relative z-10 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+            <div className="h-16 w-16 animate-spin rounded-full border-4 spinner-warm"></div>
           </div>
           <p className="text-xl font-semibold text-gray-700">
             インタビュー記事を生成中...
@@ -129,15 +133,19 @@ function ResultContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-warm">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -right-40 top-40 h-96 w-96" />
+      <div className="gradient-orb gradient-orb-yellow absolute -left-40 bottom-20 h-80 w-80" />
+
       {/* ユーザーヘッダー */}
       <UserHeader />
 
-      <div className="px-4 py-12">
+      <div className="relative z-10 px-4 py-12">
         <main className="mx-auto max-w-4xl">
         {/* ヘッダー */}
         <div className="mb-8 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900 md:text-5xl">
+          <h1 className="mb-4 bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-4xl font-bold text-transparent md:text-5xl">
             インタビュー記事が完成しました
           </h1>
           <p className="text-lg text-gray-600">
@@ -147,7 +155,7 @@ function ResultContent() {
 
         {/* プロフィール概要 */}
         {interviewData && (
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg">
+          <div className="glass-card mb-8 rounded-3xl p-6">
             <h2 className="mb-4 text-2xl font-bold text-gray-800">
               プロフィール
             </h2>
@@ -188,15 +196,15 @@ function ResultContent() {
             {interviewData.dynamic &&
               Object.keys(interviewData.dynamic).length > 0 && (
                 <>
-                  <hr className="my-6 border-gray-200" />
+                  <hr className="my-6 border-orange-200" />
                   <h3 className="mb-3 text-xl font-semibold text-gray-800">
                     深掘り情報
                   </h3>
                   <div className="space-y-4">
                     {Object.entries(interviewData.dynamic).map(
                       ([key, item]) => (
-                        <div key={key} className="rounded-lg bg-purple-50 p-4">
-                          <p className="mb-1 text-xs font-semibold text-purple-600">
+                        <div key={key} className="glass rounded-xl p-4">
+                          <p className="mb-1 text-xs font-semibold text-orange-600">
                             {item.category}
                           </p>
                           <p className="mb-2 font-semibold text-gray-800">
@@ -213,15 +221,15 @@ function ResultContent() {
         )}
 
         {/* インタビュー記事 */}
-        <div className="mb-8 rounded-2xl bg-white p-8 shadow-lg">
+        <div className="glass-card mb-8 rounded-3xl p-8">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-800">インタビュー記事</h2>
             <button
               onClick={handleCopyArticle}
-              className={`rounded-full px-6 py-2 font-semibold text-white transition-colors ${
+              className={`rounded-full px-6 py-2 font-semibold text-white shadow-md transition-all ${
                 copySuccess
                   ? 'bg-green-500'
-                  : 'bg-purple-600 hover:bg-purple-700'
+                  : 'btn-gradient-primary'
               }`}
             >
               {copySuccess ? 'コピーしました！' : 'コピー'}
@@ -238,13 +246,13 @@ function ResultContent() {
         <div className="flex flex-col gap-4 md:flex-row md:justify-center">
           <button
             onClick={handleStartNew}
-            className="rounded-full bg-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-md transition-all hover:bg-purple-700 hover:shadow-lg"
+            className="btn-gradient-primary rounded-full px-8 py-4 text-lg font-semibold text-white shadow-lg"
           >
             新しいインタビューを始める
           </button>
           <button
             onClick={() => router.push('/home')}
-            className="rounded-full border-2 border-purple-600 bg-white px-8 py-4 text-lg font-semibold text-purple-600 shadow-md transition-all hover:bg-purple-50 hover:shadow-lg"
+            className="gradient-border rounded-full bg-white px-8 py-4 text-lg font-semibold text-orange-600 shadow-md transition-all hover:shadow-lg"
           >
             HOMEに戻る
           </button>
@@ -258,10 +266,12 @@ function ResultContent() {
 export default function Result() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white">
-        <div className="text-center">
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm">
+        <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
+        <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+        <div className="relative z-10 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+            <div className="h-16 w-16 animate-spin rounded-full border-4 spinner-warm"></div>
           </div>
           <p className="text-xl font-semibold text-gray-700">読み込み中...</p>
         </div>

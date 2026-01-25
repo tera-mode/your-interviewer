@@ -68,10 +68,12 @@ export default function InterviewDetail() {
 
   if (loading || isLoading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white">
-        <div className="text-center">
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm">
+        <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
+        <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+        <div className="relative z-10 text-center">
           <div className="mb-4 flex justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-purple-200 border-t-purple-600"></div>
+            <div className="h-16 w-16 animate-spin rounded-full border-4 spinner-warm"></div>
           </div>
           <p className="text-xl font-semibold text-gray-700">読み込み中...</p>
         </div>
@@ -81,14 +83,18 @@ export default function InterviewDetail() {
 
   if (!interviewData) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white">
-        <p className="text-xl text-gray-700">インタビューが見つかりませんでした</p>
-        <button
-          onClick={() => router.push('/mypage')}
-          className="mt-4 rounded-full bg-purple-600 px-6 py-3 font-semibold text-white hover:bg-purple-700"
-        >
-          マイページに戻る
-        </button>
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm">
+        <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
+        <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+        <div className="relative z-10 text-center">
+          <p className="text-xl text-gray-700">インタビューが見つかりませんでした</p>
+          <button
+            onClick={() => router.push('/mypage')}
+            className="btn-gradient-primary mt-4 rounded-full px-6 py-3 font-semibold text-white shadow-md"
+          >
+            マイページに戻る
+          </button>
+        </div>
       </div>
     );
   }
@@ -96,23 +102,27 @@ export default function InterviewDetail() {
   const interviewer = interviewerId ? getInterviewer(interviewerId) : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white px-4 py-12">
-      <main className="mx-auto max-w-4xl">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-warm px-4 py-12">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-orange absolute -right-40 top-40 h-96 w-96" />
+      <div className="gradient-orb gradient-orb-yellow absolute -left-40 bottom-20 h-80 w-80" />
+
+      <main className="relative z-10 mx-auto max-w-4xl">
         {/* ヘッダー */}
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-gray-900">インタビュー詳細</h1>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-4xl font-bold text-transparent">
+            インタビュー詳細
+          </h1>
           <button
             onClick={() => router.push('/mypage')}
-            className="rounded-full border-2 border-purple-600 bg-white px-6 py-3 font-semibold text-purple-600 transition-all hover:bg-purple-50"
+            className="gradient-border rounded-full bg-white px-6 py-3 font-semibold text-orange-600 shadow-md transition-all hover:shadow-lg"
           >
             マイページに戻る
           </button>
         </div>
 
-        {/* インタビュワー情報は削除（ユーザーがカスタム名をつけるため） */}
-
         {/* プロフィール */}
-        <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg">
+        <div className="glass-card mb-8 rounded-3xl p-6">
           <h2 className="mb-4 text-2xl font-bold text-gray-800">プロフィール</h2>
           <div className="grid gap-3 md:grid-cols-2">
             <div>
@@ -150,12 +160,12 @@ export default function InterviewDetail() {
 
         {/* 深掘り情報 */}
         {interviewData.dynamic && Object.keys(interviewData.dynamic).length > 0 && (
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg">
+          <div className="glass-card mb-8 rounded-3xl p-6">
             <h2 className="mb-4 text-2xl font-bold text-gray-800">深掘り情報</h2>
             <div className="space-y-4">
               {Object.entries(interviewData.dynamic).map(([key, item]) => (
-                <div key={key} className="rounded-lg bg-purple-50 p-4">
-                  <p className="mb-1 text-xs font-semibold text-purple-600">
+                <div key={key} className="glass rounded-xl p-4">
+                  <p className="mb-1 text-xs font-semibold text-orange-600">
                     {item.category}
                   </p>
                   <p className="mb-2 font-semibold text-gray-800">
@@ -172,13 +182,13 @@ export default function InterviewDetail() {
         <div className="flex flex-col gap-4 md:flex-row md:justify-center">
           <button
             onClick={() => router.push(`/result?id=${interviewId}`)}
-            className="rounded-full bg-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-md transition-all hover:bg-purple-700 hover:shadow-lg"
+            className="btn-gradient-primary rounded-full px-8 py-4 text-lg font-semibold text-white shadow-lg"
           >
             記事を見る
           </button>
           <button
             onClick={() => router.push('/mypage')}
-            className="rounded-full border-2 border-purple-600 bg-white px-8 py-4 text-lg font-semibold text-purple-600 shadow-md transition-all hover:bg-purple-50 hover:shadow-lg"
+            className="gradient-border rounded-full bg-white px-8 py-4 text-lg font-semibold text-orange-600 shadow-md transition-all hover:shadow-lg"
           >
             マイページに戻る
           </button>
