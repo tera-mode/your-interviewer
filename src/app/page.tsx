@@ -92,10 +92,16 @@ export default function Home() {
             {isLoading ? '準備中...' : 'ゲストとして始める'}
           </button>
           <button
-            onClick={handleLoginStart}
+            onClick={() => router.push('/login?mode=signup')}
             className="rounded-full border-2 border-blue-600 bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-md transition-all hover:bg-blue-50 hover:shadow-lg"
           >
-            ログインして始める
+            新規会員登録して始める
+          </button>
+          <button
+            onClick={handleLoginStart}
+            className="text-gray-600 underline hover:text-gray-800"
+          >
+            ログイン
           </button>
         </div>
 
