@@ -110,15 +110,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* 注意事項 */}
-        <div className="glass max-w-2xl rounded-2xl p-4 text-sm text-gray-600">
-          <p>
-            ゲスト利用の場合、データはCookieに保存されます。Cookieを削除するとデータが消失しますのでご注意ください。
-          </p>
-          <p className="mt-2">
-            ログインすることで、データを永続的に保存できます。
-          </p>
-        </div>
       </main>
     </div>
   );
