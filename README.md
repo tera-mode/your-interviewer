@@ -115,32 +115,64 @@ your-interviewer/
 │   ├── app/                      # Next.js App Router
 │   │   ├── api/                  # APIルート
 │   │   │   ├── chat/             # チャット処理
-│   │   │   ├── generate-article/ # 記事生成
+│   │   │   ├── extract-traits/   # 特徴抽出
+│   │   │   ├── save-traits/      # 特徴保存
+│   │   │   ├── delete-trait/     # 特徴削除
+│   │   │   ├── generate-output/  # アウトプット生成
+│   │   │   ├── outputs/          # アウトプット取得
 │   │   │   ├── save-interview/   # インタビュー保存
+│   │   │   ├── save-profile/     # プロフィール保存
 │   │   │   ├── save-interviewer-name/ # インタビュワー名保存
 │   │   │   ├── get-interviews/   # インタビュー取得
 │   │   │   └── get-user-interviews/ # ユーザーのインタビュー一覧取得
 │   │   ├── home/                 # HOMEページ（ログイン後起点）
 │   │   ├── login/                # ログインページ
-│   │   ├── select-interviewer/   # インタビュワー選択
-│   │   ├── interview/            # インタビューページ
-│   │   ├── result/               # 結果ページ
-│   │   ├── mypage/               # マイページ
+│   │   ├── onboarding/           # オンボーディング（プロフィール設定）
+│   │   ├── interview/
+│   │   │   ├── select-mode/      # インタビューモード選択
+│   │   │   ├── select-interviewer/ # インタビュワー選択
+│   │   │   ├── [mode]/           # インタビューページ（モード別）
+│   │   │   └── history/          # インタビュー履歴
+│   │   ├── output/
+│   │   │   ├── create/           # アウトプット生成ページ
+│   │   │   ├── [id]/             # アウトプット詳細
+│   │   │   └── history/          # アウトプット履歴
+│   │   ├── mypage/
+│   │   │   ├── profile/          # プロフィール編集
+│   │   │   ├── traits/           # 特徴データ管理
+│   │   │   ├── interviewer/      # インタビュワー設定
+│   │   │   ├── interview/[id]/   # インタビュー詳細
+│   │   │   └── help/             # ヘルプ
+│   │   ├── result/               # 結果ページ（レガシー）
 │   │   ├── page.tsx              # LPページ
 │   │   ├── layout.tsx            # ルートレイアウト
 │   │   └── providers.tsx         # プロバイダー設定
-│   ├── components/               # 共通コンポーネント
-│   │   └── UserHeader.tsx        # ユーザーヘッダー
-│   ├── contexts/                 # React Context
+│   ├── components/
+│   │   ├── UserHeader.tsx        # ユーザーヘッダー
+│   │   └── interview/            # インタビュー関連コンポーネント
+│   │       ├── TraitCard.tsx     # 特徴カード
+│   │       ├── TraitCardList.tsx # 特徴カードリスト（PC版サイドパネル）
+│   │       ├── TraitCardCollapsible.tsx # 折りたたみパネル（SP版）
+│   │       └── IntensityLabel.tsx # 強度ラベル
+│   ├── contexts/
 │   │   └── AuthContext.tsx       # 認証コンテキスト
-│   ├── lib/                      # ライブラリ・ユーティリティ
+│   ├── hooks/
+│   │   ├── useTraitExtraction.ts # 特徴抽出フック
+│   │   └── useMediaQuery.ts      # メディアクエリフック
+│   ├── lib/
 │   │   ├── firebase/
 │   │   │   ├── config.ts         # Firebase Client設定
 │   │   │   └── admin.ts          # Firebase Admin設定
+│   │   ├── api/
+│   │   │   └── authenticatedFetch.ts # 認証付きfetch
+│   │   ├── auth/
+│   │   │   └── verifyAuth.ts     # 認証検証
 │   │   ├── gemini.ts             # Gemini API設定
-│   │   └── interviewers.ts       # インタビュワー設定
-│   └── types/                    # TypeScript型定義
-│       └── index.ts
+│   │   ├── interviewers.ts       # インタビュワー設定
+│   │   ├── interviewModes.ts     # インタビューモード設定
+│   │   └── outputTypes.ts        # アウトプットタイプ設定
+│   └── types/
+│       └── index.ts              # TypeScript型定義
 ├── .env.local                    # 環境変数（gitignoreに含む）
 ├── .gitignore
 ├── package.json
@@ -152,35 +184,44 @@ your-interviewer/
 ```
 [1] LP表示（/）
     ├─ ゲスト利用 → Firebase匿名認証で自動ログイン
-    └─ ログイン利用 → Firebase Auth (Google / Email+Password)
+    ├─ 新規会員登録 → ログインページへ
+    └─ ログイン → Firebase Auth (Google / Email+Password)
     ↓
 [2] HOMEページ（/home）← ログイン後の起点
-    ├─ 新しいインタビュー開始
-    └─ マイページへ（ログインユーザーのみ）
+    ├─ インタビューを始める → モード選択へ
+    ├─ アウトプットを生成 → アウトプット生成ページへ
+    └─ マイページへ
     ↓
-[3] インタビュワー選択（/select-interviewer）※初回のみ
+[3] オンボーディング（/onboarding）※初回のみ
+    └─ ニックネーム・職業の設定
+    ↓
+[4] インタビューモード選択（/interview/select-mode）
+    ├─ 基本インタビュー（エンドレス）
+    ├─ キャリア深掘り（エンドレス）
+    ├─ 恋愛・パートナー（エンドレス）
+    └─ 趣味・ライフスタイル（エンドレス）
+    ↓
+[5] インタビュワー選択（/interview/select-interviewer）※初回のみ
     ├─ 女性インタビュワー
     └─ 男性インタビュワー
     ↓
-[4] AIチャットインタビュー（/interview）
-    ├─ Step 0: インタビュワーに名前をつける（初回のみ）
-    ├─ Phase 1: 基本情報の収集（固定7ステップ）
-    │   └─ 名前、ニックネーム、性別、年齢、居住地、職業、職業詳細
-    └─ Phase 2: 深掘り質問（動的7ステップ）
-        └─ AIが生成する個別最適化された質問
+[6] AIチャットインタビュー（/interview/[mode]）
+    ├─ リアルタイム特徴抽出（会話中に自動でタグ付け）
+    ├─ 途中保存機能（特徴も含めて都度保存）
+    └─ 終了ボタンでインタビュー完了
     ↓
-[5] Firestore保存（全ユーザー共通）
-    ├─ インタビュー完了時に自動保存
-    └─ 保存されたIDで結果ページにリダイレクト
+[7] アウトプット生成（/output/create）
+    ├─ インタビュー記事
+    ├─ 自己PR文
+    ├─ マッチングアプリ用プロフィール
+    └─ SNSプロフィール
     ↓
-[6] アウトプット生成・表示（/result）
-    ├─ インタビュー記事（800〜1500字）
-    ├─ 記事のコピー機能
-    └─ （Phase 2-2: 自己PR、マッチングプロフィール、SNSプロフィール）
-    ↓
-[7] マイページ（/mypage）※ログインユーザーのみ
-    ├─ 過去のインタビュー一覧
-    ├─ インタビュー詳細表示
+[8] マイページ（/mypage）
+    ├─ プロフィール編集（/mypage/profile）
+    ├─ 特徴データ管理（/mypage/traits）← 削除機能あり
+    ├─ インタビュワー設定（/mypage/interviewer）
+    ├─ インタビュー履歴（/interview/history）
+    ├─ アウトプット履歴（/output/history）
     └─ ログアウト（LP /に戻る）
 ```
 
@@ -219,6 +260,32 @@ interface DynamicData {
 
 **カテゴリ例**: 趣味・ライフスタイル、価値観・仕事、エピソード・経験、将来の目標・夢、人間関係、その他
 
+### 特徴データ（Traits）
+
+```typescript
+interface UserTrait {
+  id: string;                    // ユニークID
+  label: string;                 // 特徴ラベル（例: 「チームワーク重視」）
+  category: TraitCategory;       // カテゴリ
+  description: string;           // 説明文
+  keywords: string[];            // 関連キーワード
+  confidence: number;            // 確信度（0-1）
+  intensityLabel: IntensityLabel; // 強度ラベル
+  icon: string;                  // 絵文字アイコン
+  extractedAt: Date;             // 抽出日時
+}
+
+type TraitCategory =
+  | 'personality'    // 性格・人柄
+  | 'skill'          // スキル・能力
+  | 'value'          // 価値観
+  | 'interest'       // 興味・関心
+  | 'experience'     // 経験・実績
+  | 'goal';          // 目標・志向
+
+type IntensityLabel = 'とても' | 'かなり' | 'やや';
+```
+
 ### Firestoreデータ構造
 
 ```
@@ -226,19 +293,30 @@ interface DynamicData {
   - uid: string
   - email?: string
   - displayName?: string
-  - interviewerName?: string  # ユーザーがつけたインタビュワーの名前
+  - nickname?: string            # ニックネーム
+  - occupation?: string          # 職業
+  - interviewerName?: string     # ユーザーがつけたインタビュワーの名前
+  - selectedInterviewer?: string # 選択中のインタビュワーID
   - createdAt: Timestamp
   - lastLoginAt: Timestamp
+  - updatedAt: Timestamp
 
 /interviews/{interviewId}
   - userId: string
   - interviewerId: 'female_01' | 'male_01'
+  - mode: InterviewMode          # インタビューモード
   - messages: ChatMessage[]
   - data: {
       fixed: FixedUserData
       dynamic: DynamicData
       createdAt: Timestamp
       updatedAt: Timestamp
+    }
+  - traits: UserTrait[]          # 抽出された特徴
+  - traitsSummary: {             # 特徴サマリー
+      totalCount: number
+      categoryBreakdown: Record<TraitCategory, number>
+      topTraits: string[]
     }
   - status: 'in_progress' | 'completed'
   - createdAt: Timestamp
@@ -356,6 +434,88 @@ interface DynamicData {
 }
 ```
 
+### POST /api/extract-traits
+
+会話から特徴を抽出
+
+**Request:**
+```json
+{
+  "userMessage": "string",
+  "assistantMessage": "string",
+  "messageIndex": number,
+  "existingTraits": UserTrait[]
+}
+```
+
+**Response:**
+```json
+{
+  "newTraits": UserTrait[],
+  "updatedTraits": UserTrait[]
+}
+```
+
+### POST /api/save-traits
+
+特徴をインタビューに保存
+
+**Request:**
+```json
+{
+  "interviewId": "string",
+  "traits": UserTrait[]
+}
+```
+
+**Response:**
+```json
+{
+  "success": boolean
+}
+```
+
+### POST /api/delete-trait
+
+特徴を削除
+
+**Request:**
+```json
+{
+  "traitId": "string",
+  "traitLabel": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": boolean,
+  "deletedCount": number
+}
+```
+
+### POST /api/generate-output
+
+アウトプットを生成
+
+**Request:**
+```json
+{
+  "outputType": "interview_article" | "self_pr" | "matching_profile" | "sns_profile",
+  "traits": UserTrait[],
+  "userProfile": { nickname: string, occupation: string }
+}
+```
+
+**Response:**
+```json
+{
+  "content": "string",
+  "outputId": "string"
+}
+```
+
 ## インタビュワー設定
 
 | ID | 性別 | キャラクター | 口調 |
@@ -372,6 +532,20 @@ interface DynamicData {
 - `/public/image/` に保存
 - アイコン: 丸抜き（48px × 48px）
 - 選択画面: 矩形（600px高さ）
+
+## インタビューモード
+
+| ID | モード名 | アイコン | 説明 |
+|----|----------|---------|------|
+| basic | 基本インタビュー | 💬 | あなたの魅力を幅広く引き出します |
+| career | キャリア深掘り | 💼 | 仕事やキャリアについて深掘りします |
+| love | 恋愛・パートナー | 💕 | 恋愛観やパートナーシップについて |
+| hobby | 趣味・ライフスタイル | 🎨 | 趣味や日常の過ごし方について |
+
+**エンドレスモード**:
+- 全てのモードはエンドレス（終了タイミングを自分で決定）
+- 「終了」ボタンでいつでもインタビューを完了可能
+- 途中でブラウザを閉じても、それまでの特徴は保存される
 
 ## 開発ルール
 
@@ -405,10 +579,9 @@ interface DynamicData {
 
 ### ✅ Phase 2-1 完了（深掘りインタビュー機能）
 - [x] Firebase匿名認証（ゲストユーザー自動ログイン）
-- [x] 深掘り質問機能（AIが動的に7つの質問を生成）
+- [x] 深掘り質問機能（AIが動的に質問を生成）
 - [x] カテゴリ自動分類（AIが質問を6つのカテゴリに分類）
 - [x] Firestore直接保存方式（Cookie依存からの脱却）
-- [x] URLパラメータでの結果表示（/result?id={interviewId}）
 - [x] マイページ（過去のインタビュー一覧）
 - [x] インタビュー詳細ページ（/mypage/interview/[id]）
 - [x] HOMEページ（ログイン後の起点ページ）
@@ -416,20 +589,39 @@ interface DynamicData {
 - [x] インタビュワー名カスタマイズ機能（初回に名前付け）
 - [x] インタビュワー選択の初回のみ化（2回目以降は自動選択）
 - [x] ユーザーヘッダー（ログイン状態表示、HOME/マイページへの導線）
-- [x] UI改善（インタビューページのアイコン配置、名前表示の最適化）
 
-### 📋 Phase 2-2（予定）
-- [ ] 4種類のアウトプット生成
-  - [ ] 自己PR文（300〜400字）
-  - [ ] マッチングアプリ用プロフィール（200〜300字）
-  - [ ] SNSプロフィール（50〜100字）
-- [ ] タブUIで複数アウトプット切り替え表示
-- [ ] シェア機能（Twitter、LINE、URL公開リンク）
+### ✅ Phase 2-2 完了（特徴抽出・モード機能）
+- [x] リアルタイム特徴抽出（会話中に自動でタグ付け）
+- [x] 特徴カード表示（PC: サイドパネル、SP: 折りたたみ）
+- [x] 特徴の強度ラベル（とても/かなり/やや）
+- [x] インタビューモード選択（基本/キャリア/恋愛/趣味）
+- [x] エンドレスモード（自分のタイミングで終了可能）
+- [x] インタビュー途中保存（特徴も含めて都度保存）
+- [x] オンボーディング（初回プロフィール設定）
+- [x] UIデザイン刷新（グラスモーフィズム、オレンジ基調）
+
+### ✅ Phase 2-3 完了（マイページ強化）
+- [x] プロフィール編集ページ（/mypage/profile）
+- [x] 特徴データ管理ページ（/mypage/traits）
+- [x] 特徴の削除機能
+- [x] インタビュワー設定ページ（/mypage/interviewer）
+- [x] ヘルプページ（/mypage/help）
+- [x] インタビュー履歴ページ（/interview/history）
+- [x] アウトプット履歴ページ（/output/history）
+
+### ✅ Phase 2-4 完了（アウトプット生成）
+- [x] アウトプット生成ページ（/output/create）
+- [x] 4種類のアウトプット生成
+  - [x] インタビュー記事
+  - [x] 自己PR文
+  - [x] マッチングアプリ用プロフィール
+  - [x] SNSプロフィール
+- [x] アウトプット詳細ページ（/output/[id]）
 
 ### 📋 Phase 3（予定）
+- [ ] シェア機能（Twitter、LINE、URL公開リンク）
 - [ ] メール送信機能（Brevo）
 - [ ] 定期実行（GitHub Actions）
-- [ ] プロフィール編集機能
 - [ ] インタビュー再編集機能
 
 ## トラブルシューティング
