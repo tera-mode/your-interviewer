@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { user, loading, isOnboardingRequired, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -26,10 +26,15 @@ function LoginContent() {
   useEffect(() => {
     // 匿名ユーザーの場合は何もしない（ログインフローを進めるため）
     if (user && !loading && !user.isAnonymous) {
-      // 通常のログイン済みユーザーの場合のみHOMEにリダイレクト
-      router.push('/home');
+      // オンボーディングが必要な場合はオンボーディングへ
+      if (isOnboardingRequired) {
+        router.push('/onboarding');
+      } else {
+        // 通常のログイン済みユーザーの場合はHOMEにリダイレクト
+        router.push('/home');
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, isOnboardingRequired, router]);
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);

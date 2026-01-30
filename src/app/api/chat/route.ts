@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGeminiModel } from '@/lib/gemini';
 import { getInterviewer } from '@/lib/interviewers';
-import { ChatMessage, InterviewerId, FixedUserData, DynamicData } from '@/types';
+import { getInterviewMode, isEndlessMode, getQuestionCount } from '@/lib/interviewModes';
+import { ChatMessage, InterviewerId, InterviewMode, FixedUserData, DynamicData } from '@/types';
+import { verifyAuth } from '@/lib/auth/verifyAuth';
 
 // インタビューの状態を管理するためのインターフェース
 interface InterviewState {
@@ -10,18 +12,27 @@ interface InterviewState {
   currentStep: number;
   totalSteps: number;
   isFixedPhaseComplete: boolean;
+  mode: InterviewMode;
 }
 
 // Phase 1: 基本情報収集のステップ（簡素化: 2ステップのみ）
 const FIXED_INTERVIEW_STEPS = ['nickname', 'occupation'];
 
-// Phase 2: 深掘り質問のステップ数
-const DYNAMIC_INTERVIEW_STEPS_COUNT = 10; // 深掘り質問を増やす
-const TOTAL_STEPS = FIXED_INTERVIEW_STEPS.length + DYNAMIC_INTERVIEW_STEPS_COUNT;
+// デフォルトの深掘り質問数（エンドレスモード以外）
+const DEFAULT_DYNAMIC_STEPS = 10;
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, interviewerId } = await request.json();
+    // 認証検証（匿名ユーザーも含む）
+    const authResult = await verifyAuth(request);
+    if (!authResult.authenticated || !authResult.uid) {
+      return NextResponse.json(
+        { error: authResult.error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { messages, interviewerId, mode = 'basic', forceComplete = false, userProfile } = await request.json();
 
     if (!messages || !Array.isArray(messages) || !interviewerId) {
       return NextResponse.json(
@@ -38,8 +49,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // インタビューの状態を分析
-    const state = await analyzeInterviewState(messages);
+    // インタビューの状態を分析（userProfileがあれば固定質問をスキップ）
+    const state = await analyzeInterviewState(messages, mode as InterviewMode, userProfile);
+
+    // 強制終了フラグがある場合（エンドレスモードの終了ボタン）
+    if (forceComplete && isEndlessMode(mode)) {
+      return handleForceComplete(state, interviewer);
+    }
 
     // システムプロンプトを生成
     const systemPrompt = generateSystemPrompt(interviewer, state);
@@ -75,7 +91,8 @@ export async function POST(request: NextRequest) {
     const responseText = result.response.text();
 
     // === 完了判定 ===
-    const isCompleted = state.currentStep >= state.totalSteps;
+    // エンドレスモードの場合はforceCompleteでのみ完了
+    const isCompleted = isEndlessMode(mode) ? false : state.currentStep >= state.totalSteps;
 
     // === カテゴリ分類を追加 ===
     let finalDynamicData = state.dynamicData;
@@ -103,6 +120,44 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * エンドレスモードの強制終了処理
+ */
+async function handleForceComplete(
+  state: InterviewState,
+  interviewer: { tone: string; character: string }
+) {
+  // 最終メッセージを生成
+  const model = getGeminiModel();
+  const prompt = `あなたはインタビュワーです。
+キャラクター: ${interviewer.character}
+話し方: ${interviewer.tone}
+
+インタビューが終了しました。${state.collectedData.nickname}さんに感謝の言葉を述べて、インタビューを締めくくってください。
+- 2〜3文で簡潔に
+- 相手の魅力が引き出せたことを喜ぶ
+- 温かい言葉で締めくくる`;
+
+  const result = await model.generateContent(prompt);
+  const responseText = result.response.text();
+
+  // カテゴリ分類
+  let finalDynamicData = state.dynamicData;
+  if (Object.keys(state.dynamicData).length > 0) {
+    finalDynamicData = await categorizeDynamicData(state.dynamicData);
+  }
+
+  return NextResponse.json({
+    message: responseText,
+    isCompleted: true,
+    interviewData: {
+      ...state.collectedData,
+      dynamic: finalDynamicData,
+    },
+    extractedNickname: state.collectedData.nickname || null,
+  });
 }
 
 /**
@@ -219,13 +274,61 @@ function extractQuestionFromMessage(content: string): string {
   return questionSentence ? questionSentence.trim() : content;
 }
 
-async function analyzeInterviewState(messages: ChatMessage[]): Promise<InterviewState> {
+async function analyzeInterviewState(
+  messages: ChatMessage[],
+  mode: InterviewMode,
+  userProfile?: { nickname: string; occupation: string }
+): Promise<InterviewState> {
   const collectedData: Partial<FixedUserData> = {};
   const dynamicData: DynamicData = {};
   let currentStep = 0;
 
+  // モードに基づく質問数を取得
+  const questionCount = getQuestionCount(mode) || DEFAULT_DYNAMIC_STEPS;
+  const totalSteps = isEndlessMode(mode) ? Infinity : FIXED_INTERVIEW_STEPS.length + questionCount;
+
   // メッセージ履歴から収集済みの情報を抽出
   const userMessages = messages.filter((msg) => msg.role === 'user');
+
+  // === userProfileがある場合は固定質問フェーズをスキップ ===
+  if (userProfile?.nickname && userProfile?.occupation) {
+    collectedData.nickname = userProfile.nickname;
+    collectedData.occupation = userProfile.occupation;
+    currentStep = FIXED_INTERVIEW_STEPS.length; // 固定質問フェーズ完了済みとして扱う
+
+    // 深掘り質問の抽出
+    const assistantMessages = messages.filter((msg) => msg.role === 'assistant');
+    userMessages.forEach((userMsg, index) => {
+      // 最初のassistantメッセージ（挨拶）の後のやり取りを深掘り質問として扱う
+      const questionMsg = assistantMessages[index]; // 0番目が最初の深掘り質問
+      if (questionMsg && index > 0) { // index 0はユーザーの最初の回答
+        const key = `dynamic_${index}`;
+        dynamicData[key] = {
+          question: extractQuestionFromMessage(questionMsg.content),
+          answer: userMsg.content,
+          category: '',
+        };
+      } else if (index === 0) {
+        // 最初の回答も深掘りデータとして保存
+        const key = `dynamic_1`;
+        dynamicData[key] = {
+          question: extractQuestionFromMessage(assistantMessages[0]?.content || ''),
+          answer: userMsg.content,
+          category: '',
+        };
+      }
+      currentStep = FIXED_INTERVIEW_STEPS.length + index + 1;
+    });
+
+    return {
+      collectedData,
+      dynamicData,
+      currentStep,
+      totalSteps,
+      isFixedPhaseComplete: true,
+      mode,
+    };
+  }
 
   // === Phase 1: 固定情報の抽出（簡素化: 2ステップ） ===
 
@@ -272,8 +375,9 @@ async function analyzeInterviewState(messages: ChatMessage[]): Promise<Interview
     collectedData,
     dynamicData,
     currentStep,
-    totalSteps: TOTAL_STEPS,
+    totalSteps,
     isFixedPhaseComplete,
+    mode,
   };
 }
 
@@ -281,6 +385,9 @@ function generateSystemPrompt(
   interviewer: { tone: string; character: string },
   state: InterviewState
 ): string {
+  const modeConfig = getInterviewMode(state.mode);
+  const modeFocus = modeConfig?.systemPromptFocus || '';
+
   // === Phase 1: 固定情報収集モード（簡素化: 2ステップ） ===
   if (!state.isFixedPhaseComplete) {
     const nextStep = FIXED_INTERVIEW_STEPS[state.currentStep];
@@ -298,6 +405,10 @@ function generateSystemPrompt(
         stepInstruction = '';
     }
 
+    const progressText = isEndlessMode(state.mode)
+      ? `${state.currentStep} ステップ完了（エンドレスモード）`
+      : `${state.currentStep} / ${state.totalSteps} ステップ完了`;
+
     return `あなたはインタビュワーです。
 キャラクター: ${interviewer.character}
 話し方: ${interviewer.tone}
@@ -311,16 +422,33 @@ function generateSystemPrompt(
 6. ユーザーの回答に対して簡単にリアクションした後、次の質問をしてください
 
 【現在の進行状況】
-${state.currentStep} / ${state.totalSteps} ステップ完了`;
+${progressText}`;
   }
 
   // === Phase 2: 深掘りモード ===
   const dynamicStepNumber = state.currentStep - FIXED_INTERVIEW_STEPS.length;
-  const remainingQuestions = DYNAMIC_INTERVIEW_STEPS_COUNT - dynamicStepNumber;
+  const questionCount = getQuestionCount(state.mode) || DEFAULT_DYNAMIC_STEPS;
+  const remainingQuestions = isEndlessMode(state.mode) ? null : questionCount - dynamicStepNumber;
+
+  // エンドレスモード用の進行状況テキスト
+  const progressText = isEndlessMode(state.mode)
+    ? `深掘り質問: ${dynamicStepNumber}問完了（エンドレスモード - ユーザーが終了するまで継続）`
+    : `深掘り質問: ${dynamicStepNumber} / ${questionCount} 完了\n全体: ${state.currentStep} / ${state.totalSteps} ステップ完了`;
+
+  // 残り質問数のテキスト
+  const remainingText = isEndlessMode(state.mode)
+    ? 'ユーザーが「インタビューを終了」ボタンを押すまで、様々な角度から質問を続けてください。'
+    : `あと${remainingQuestions}個の質問を行います`;
+
+  // 最後の質問かどうか
+  const isLastQuestion = !isEndlessMode(state.mode) && remainingQuestions === 1;
 
   return `あなたはインタビュワーです。
 キャラクター: ${interviewer.character}
 話し方: ${interviewer.tone}
+
+【インタビューモード: ${modeConfig?.name || '基本インタビュー'}】
+${modeFocus}
 
 【状況】
 基本情報の収集が完了しました。ここからは、${state.collectedData.nickname}さんの魅力をさらに深掘りする質問をします。
@@ -329,26 +457,16 @@ ${state.currentStep} / ${state.totalSteps} ステップ完了`;
 - 呼び名: ${state.collectedData.nickname}
 - 職業: ${state.collectedData.occupation}
 
-【深掘り質問の指示】
-1. **質問の目的**: ユーザーの人柄、価値観、趣味、エピソードなど、魅力を引き出す質問をしてください
-2. **質問のカテゴリ例**:
-   - 趣味・ライフスタイル（休日の過ごし方、好きなこと、ハマっていること）
-   - 価値観・仕事（大切にしていること、仕事への姿勢、やりがい）
-   - エピソード（印象的な出来事、転機、思い出）
-   - 将来の目標・夢（これからやりたいこと、挑戦したいこと）
-   - 人間関係（友人との関わり、大切な人、影響を受けた人）
-   - 性格・特技（自分の長所、得意なこと、人から言われること）
-3. **質問の流れ**: 前回の回答を踏まえて、自然な会話の流れで次の質問を生成してください
-4. **質問数**: あと${remainingQuestions}個の質問を行います
-5. **トーン**: ${interviewer.tone}で、温かく共感的に話してください
+【質問数について】
+${remainingText}
 
 【ルール】
 - 1回の返答は2〜3文程度
 - ユーザーの回答に対して共感や相槌を入れた後、次の質問をしてください
 - 質問は1つずつ、焦らず丁寧に聞いてください
-- ${remainingQuestions === 1 ? 'これが最後の質問です。回答を受け取ったら、インタビュー終了の感謝を述べてください。' : ''}
+- 前回の回答を踏まえて、自然な会話の流れで次の質問を生成してください
+${isLastQuestion ? '- これが最後の質問です。回答を受け取ったら、インタビュー終了の感謝を述べてください。' : ''}
 
 【現在の進行状況】
-深掘り質問: ${dynamicStepNumber} / ${DYNAMIC_INTERVIEW_STEPS_COUNT} 完了
-全体: ${state.currentStep} / ${state.totalSteps} ステップ完了`;
+${progressText}`;
 }

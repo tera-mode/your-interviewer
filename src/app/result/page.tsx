@@ -95,21 +95,11 @@ function ResultContent() {
   };
 
   const handleStartNew = () => {
-    // ゲストセッションIDがない場合は作成
-    if (!Cookies.get('guest_session_id')) {
-      const { v4: uuidv4 } = require('uuid');
-      const sessionId = uuidv4();
-      Cookies.set('guest_session_id', sessionId, { expires: 30, path: '/' });
-    }
+    router.push('/interview/select-mode');
+  };
 
-    // すでにインタビュワーが選択されている場合は直接インタビューページへ
-    const selectedInterviewer = Cookies.get('selected_interviewer');
-    if (selectedInterviewer) {
-      router.push('/interview');
-    } else {
-      // 初回の場合はインタビュワー選択ページへ
-      router.push('/select-interviewer');
-    }
+  const handleCreateOutput = () => {
+    router.push('/output/create');
   };
 
   if (isLoading) {
@@ -240,6 +230,22 @@ function ResultContent() {
               {article}
             </div>
           </div>
+        </div>
+
+        {/* アウトプット作成CTA */}
+        <div className="glass-card mb-8 rounded-3xl p-6 text-center">
+          <h3 className="mb-2 text-xl font-bold text-gray-800">
+            アウトプットを作成しませんか？
+          </h3>
+          <p className="mb-4 text-gray-600">
+            インタビューで発見した特徴から、SNSプロフィールや自己PR文を自動生成できます
+          </p>
+          <button
+            onClick={handleCreateOutput}
+            className="btn-gradient-secondary rounded-full px-8 py-3 text-lg font-semibold text-white shadow-lg"
+          >
+            アウトプットを作成する
+          </button>
         </div>
 
         {/* アクションボタン */}

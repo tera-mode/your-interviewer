@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ユーザードキュメント
+    match /users/{userId} {
+      // 認証済みユーザーは自分のドキュメントのみ読み書き可能
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // インタビュードキュメント
+    match /interviews/{interviewId} {
+      // 認証済みユーザーは自分のインタビューのみ読み取り可能
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || resource.data.userId == null);
+
+      // 認証済みユーザーは自分のインタビューのみ作成・更新可能
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+        (resource.data.userId == request.auth.uid || resource.data.userId == null);
+
+      // 削除は不可（アーカイブ方式を使用）
+      allow delete: if false;
+    }
+
+    // アウトプットドキュメント
+    match /outputs/{outputId} {
+      // 認証済みユーザーは自分のアウトプットのみ読み書き可能
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+
+      // 新規作成時は自分のuserIdを設定している場合のみ許可
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+    }
+
+    // その他のドキュメントはデフォルトで拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

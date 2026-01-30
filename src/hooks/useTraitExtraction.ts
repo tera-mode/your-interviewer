@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { UserTrait, ExtractTraitsResponse } from '@/types';
+import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
 
 interface UseTraitExtractionOptions {
   onTraitExtracted?: (newTraits: UserTrait[], updatedTraits: UserTrait[]) => void;
@@ -50,11 +51,8 @@ export function useTraitExtraction(
             });
           });
 
-          const response = await fetch('/api/extract-traits', {
+          const response = await authenticatedFetch('/api/extract-traits', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
               userMessage,
               assistantMessage,

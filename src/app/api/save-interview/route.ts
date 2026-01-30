@@ -5,14 +5,34 @@ import {
   InterviewSession,
   ChatMessage,
   InterviewerId,
+  InterviewMode,
 } from '@/types';
+import { verifyAuth } from '@/lib/auth/verifyAuth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, interviewData, messages, interviewerId, sessionId, interviewId, status } =
+    // 認証検証（匿名ユーザーも含む）
+    const authResult = await verifyAuth(request);
+
+    const { userId, interviewData, messages, interviewerId, mode, sessionId, interviewId, status } =
       await request.json();
 
-    // userIdはオプショナル（ゲストユーザーの場合はundefined）
+    // userIdが指定されている場合は認証を必須とし、uidと一致するか検証
+    if (userId) {
+      if (!authResult.authenticated || !authResult.uid) {
+        return NextResponse.json(
+          { error: authResult.error || 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+      if (userId !== authResult.uid) {
+        return NextResponse.json(
+          { error: 'User ID mismatch' },
+          { status: 403 }
+        );
+      }
+    }
+
     if (!messages || !interviewerId || !sessionId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -55,6 +75,7 @@ export async function POST(request: NextRequest) {
     const interviewSession: Omit<InterviewSession, 'id'> = {
       userId,
       interviewerId: interviewerId as InterviewerId,
+      mode: (mode as InterviewMode) || 'basic',
       messages: messages.map((msg: ChatMessage) => ({
         ...msg,
         timestamp: new Date(msg.timestamp),

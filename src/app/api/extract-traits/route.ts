@@ -7,6 +7,7 @@ import {
   ExtractTraitsRequest,
   ExtractTraitsResponse,
 } from '@/types';
+import { verifyAuth } from '@/lib/auth/verifyAuth';
 
 const EXTRACTION_PROMPT = `あなたはインタビューの会話からユーザーの特徴を抽出・更新する専門家です。
 以下の会話から、ユーザーの特徴を分析してJSON形式で出力してください。
@@ -87,6 +88,15 @@ interface GeminiResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    // 認証検証（匿名ユーザーも含む）
+    const authResult = await verifyAuth(request);
+    if (!authResult.authenticated || !authResult.uid) {
+      return NextResponse.json<ExtractTraitsResponse>(
+        { newTraits: [], updatedTraits: [], error: authResult.error || 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body: ExtractTraitsRequest = await request.json();
     const { userMessage, assistantMessage, messageIndex, existingTraits } = body;
 
