@@ -27,10 +27,19 @@ export async function GET(request: NextRequest) {
     }
 
     const outputsRef = adminDb.collection('outputs');
-    const snapshot = await outputsRef
-      .where('userId', '==', userId)
-      .orderBy('createdAt', 'desc')
-      .get();
+    let snapshot;
+    try {
+      snapshot = await outputsRef
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+    } catch (indexError: unknown) {
+      // Composite index が未作成の場合、orderBy なしで取得してクライアント側ソート
+      console.warn('Firestore composite index not available, falling back to client-side sort:', (indexError as Error).message);
+      snapshot = await outputsRef
+        .where('userId', '==', userId)
+        .get();
+    }
 
     const outputs = snapshot.docs.map((doc) => {
       const data = doc.data();
@@ -44,6 +53,13 @@ export async function GET(request: NextRequest) {
           generatedAt: data.sourceData?.generatedAt?.toDate?.()?.toISOString() || data.sourceData?.generatedAt,
         },
       };
+    });
+
+    // クライアント側ソート（フォールバック用）
+    outputs.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
     });
 
     return NextResponse.json({

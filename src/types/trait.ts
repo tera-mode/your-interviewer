@@ -21,16 +21,16 @@ export const TRAIT_CATEGORY_LABELS: Record<TraitCategory, string> = {
   other: 'その他',
 };
 
-// カテゴリの色（Tailwind CSS用 - オレンジ暖色系パレット）
+// カテゴリの色（Tailwind CSS用 - エメラルド/ティール系パレット）
 export const TRAIT_CATEGORY_COLORS: Record<TraitCategory, string> = {
-  personality: 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border-orange-200',
+  personality: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-200',
   hobby: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-200',
-  skill: 'bg-gradient-to-r from-orange-100 to-rose-100 text-orange-700 border-orange-200',
-  work: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-200',
-  value: 'bg-gradient-to-r from-rose-100 to-orange-100 text-rose-700 border-rose-200',
-  lifestyle: 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200',
-  experience: 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 border-orange-200',
-  other: 'bg-gradient-to-r from-stone-100 to-amber-50 text-stone-700 border-stone-200',
+  skill: 'bg-gradient-to-r from-teal-100 to-cyan-100 text-teal-700 border-teal-200',
+  work: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-200',
+  value: 'bg-gradient-to-r from-rose-100 to-pink-100 text-rose-700 border-rose-200',
+  lifestyle: 'bg-gradient-to-r from-sky-100 to-blue-100 text-sky-800 border-sky-200',
+  experience: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-200',
+  other: 'bg-gradient-to-r from-stone-100 to-gray-100 text-stone-700 border-stone-200',
 };
 
 // 強弱キーワードの例

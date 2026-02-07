@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     // システムプロンプトを生成
-    const systemPrompt = generateSystemPrompt(interviewer, state, interviewerCustomization);
+    const systemPrompt = generateSystemPrompt(interviewer, state, interviewerCustomization, messages);
 
     // Gemini APIを使用して返答を生成
     const model = getGeminiModel();
@@ -511,10 +511,44 @@ async function analyzeInterviewState(
   };
 }
 
+/**
+ * 直近の会話を分析し、同じトピックが3回以上連続している場合に強制切り替え指示を返す
+ */
+function detectTopicRepetition(messages?: ChatMessage[]): string {
+  if (!messages || messages.length < 6) return '';
+
+  // 直近のassistantメッセージ（質問）を3つ取得
+  const recentAssistant = messages
+    .filter((m) => m.role === 'assistant')
+    .slice(-3);
+
+  if (recentAssistant.length < 3) return '';
+
+  // 簡易的な類似度チェック: 直近3つの質問で共通するキーワードが多い場合
+  const texts = recentAssistant.map((m) => m.content);
+  const words0 = new Set(texts[0].split(/[\s、。？！?!,.\n]+/).filter((w) => w.length >= 2));
+  const words1 = new Set(texts[1].split(/[\s、。？！?!,.\n]+/).filter((w) => w.length >= 2));
+  const words2 = new Set(texts[2].split(/[\s、。？！?!,.\n]+/).filter((w) => w.length >= 2));
+
+  // 3つの質問すべてに共通するキーワードを数える
+  let commonCount = 0;
+  for (const w of words0) {
+    if (words1.has(w) && words2.has(w)) commonCount++;
+  }
+
+  if (commonCount >= 3) {
+    return `
+【強制】直近の質問で同じテーマが続いています。必ず違う話題に切り替えてください。`;
+  }
+
+  return '';
+}
+
 function generateSystemPrompt(
   interviewer: { tone: string; character: string },
   state: InterviewState,
-  interviewerCustomization?: string
+  interviewerCustomization?: string,
+  messages?: ChatMessage[]
 ): string {
   const modeConfig = getInterviewMode(state.mode);
   const modeFocus = modeConfig?.systemPromptFocus || '';
@@ -658,9 +692,10 @@ ${modeFocus}
 ## 質問数
 ${remainingText}
 
-## 深掘りのバランス
+## 深掘りのバランス【厳守ルール】
 
-同じ話題は2回まで深掘りOK。3回目は話題を変える。
+同じ話題の深掘りは最大2回まで。3回目は必ず別の話題に移ること。
+これは絶対に守るべきルールです。
 
 深掘りの良い例:
 1. 最初の質問「趣味は何？」→ 回答「読書です」
@@ -709,6 +744,6 @@ ${questionExamples}
 ${isLastQuestion ? `
 ## 最後の質問
 これが最後の質問です。回答を受け取ったら、軽く温かい言葉で締めくくってください。` : ''}
-
+${detectTopicRepetition(messages)}
 【進行状況】${progressText}`;
 }

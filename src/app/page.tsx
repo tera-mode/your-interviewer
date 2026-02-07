@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Cookies from 'js-cookie';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
+import { Pickaxe, User, Hammer, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
@@ -14,18 +15,13 @@ export default function Home() {
   const handleGuestStart = async () => {
     setIsLoading(true);
     try {
-      // 匿名認証を実行
-      console.log('Starting anonymous authentication...');
       await signInAsGuest();
-      console.log('Anonymous authentication successful!');
 
-      // ゲストセッションIDを生成してCookieに保存
       const sessionId = uuidv4();
-      Cookies.set('guest_session_id', sessionId, { expires: 30, path: '/' }); // 30日間有効
-      console.log('Guest session ID created:', sessionId);
+      Cookies.set('guest_session_id', sessionId, { expires: 30, path: '/' });
 
-      // HOMEページへ遷移
-      router.push('/home');
+      // ゲストはスワイプ診断へ直行
+      router.push('/dig/swipe');
     } catch (error) {
       console.error('Failed to start as guest:', error);
       alert('ゲストとして開始できませんでした。もう一度お試しください。');
@@ -35,61 +31,71 @@ export default function Home() {
   };
 
   const handleLoginStart = () => {
-    // ログインページへ遷移
     router.push('/login');
   };
 
   return (
-    <div
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-12"
-      style={{
-        backgroundImage: 'url(/image/lady-interviewer.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      {/* 背景オーバーレイ */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-white/70" />
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-main px-4 py-12">
+      {/* 装飾用グラデーションオーブ */}
+      <div className="gradient-orb gradient-orb-emerald absolute -left-32 top-20 h-80 w-80" />
+      <div className="gradient-orb gradient-orb-amber absolute -right-32 bottom-20 h-72 w-72" />
 
       {/* マイページボタン（ログインユーザーのみ） */}
       {user && !user.isAnonymous && (
         <div className="absolute right-4 top-4 z-10">
           <button
             onClick={() => router.push('/mypage')}
-            className="btn-gradient-primary rounded-full px-6 py-3 font-semibold text-white shadow-lg"
+            className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 font-semibold text-white shadow-lg"
           >
             マイページ
           </button>
         </div>
       )}
 
-      <main className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-12 text-center">
+      <main className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-10 text-center">
         {/* ヘッダー */}
         <div className="flex flex-col gap-4">
-          <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
+          <h1 className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 bg-clip-text text-5xl font-bold text-transparent md:text-6xl">
             じぶんクラフト
           </h1>
           <p className="text-xl text-gray-700 md:text-2xl">
-            AIとの会話や診断で自分の特徴を集めよう
+            自分の特徴を掘って、集めて、つくろう
           </p>
         </div>
 
-        {/* サービス説明 */}
-        <div className="glass-card flex max-w-2xl flex-col gap-6 rounded-3xl p-8 shadow-xl">
-          <h2 className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-2xl font-semibold text-transparent">
-            AIとの会話で自分を知る体験
+        {/* サービスの流れ */}
+        <div className="glass-card flex max-w-2xl flex-col gap-6 p-8 shadow-xl">
+          <h2 className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-2xl font-semibold text-transparent">
+            3ステップで自分を知る
           </h2>
-          <div className="text-left text-gray-700">
-            <p className="mb-4">
-              AIとの会話であなたの特徴を集めて、以下のコンテンツを自動生成します：
-            </p>
-            <ul className="list-inside list-disc space-y-2 text-gray-600">
-              <li>雑誌風のインタビュー記事</li>
-              <li>就活・転職で使える自己PR文</li>
-              <li>マッチングアプリ用プロフィール</li>
-              <li>SNSプロフィール</li>
-            </ul>
+          <div className="grid gap-4 text-left md:grid-cols-3">
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/40 p-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-yellow-200">
+                <Pickaxe size={24} className="text-amber-600" />
+              </div>
+              <h3 className="font-bold text-gray-800">ほる</h3>
+              <p className="text-sm text-gray-600">
+                スワイプ診断やAIインタビューで自分の特徴を掘り出す
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/40 p-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-200 to-teal-200">
+                <User size={24} className="text-emerald-600" />
+              </div>
+              <h3 className="font-bold text-gray-800">あつめる</h3>
+              <p className="text-sm text-gray-600">
+                発見した特徴がどんどん蓄積。自分の特徴図鑑ができる
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/40 p-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sky-200 to-blue-200">
+                <Hammer size={24} className="text-sky-600" />
+              </div>
+              <h3 className="font-bold text-gray-800">つくる</h3>
+              <p className="text-sm text-gray-600">
+                集めた特徴から自己PR文やプロフィールを自動生成
+              </p>
+            </div>
           </div>
         </div>
 
@@ -98,24 +104,24 @@ export default function Home() {
           <button
             onClick={handleGuestStart}
             disabled={isLoading}
-            className="btn-gradient-primary rounded-full px-8 py-4 text-lg font-semibold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? '準備中...' : 'ゲストとして始める'}
+            <Sparkles size={20} />
+            {isLoading ? '準備中...' : 'さっそく掘ってみる'}
           </button>
           <button
             onClick={() => router.push('/login?mode=signup')}
-            className="gradient-border rounded-full bg-white px-8 py-4 text-lg font-semibold text-orange-600 shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
+            className="rounded-xl border-2 border-emerald-300 bg-white/80 px-8 py-4 text-lg font-semibold text-emerald-700 shadow-md transition-all hover:shadow-lg hover:scale-[1.02]"
           >
             新規会員登録して始める
           </button>
           <button
             onClick={handleLoginStart}
-            className="text-gray-600 underline decoration-orange-300 underline-offset-4 hover:text-orange-600 hover:decoration-orange-500"
+            className="text-gray-600 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-600 hover:decoration-emerald-500"
           >
             ログイン
           </button>
         </div>
-
       </main>
     </div>
   );

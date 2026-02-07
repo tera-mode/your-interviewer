@@ -59,7 +59,7 @@ export default function UserHeader({
         <div className="flex items-center gap-2">
           {showHomeButton && (
             <button
-              onClick={() => router.push('/home')}
+              onClick={() => router.push('/dig')}
               className="rounded-full border border-orange-200 bg-white/80 px-4 py-2 text-sm font-semibold text-gray-700 backdrop-blur-sm transition-all hover:bg-orange-50 hover:border-orange-300"
             >
               HOME

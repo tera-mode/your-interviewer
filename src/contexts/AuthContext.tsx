@@ -65,12 +65,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userInterviewer, setUserInterviewer] = useState<UserInterviewer | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // オンボーディングが必要かどうか（非匿名ユーザーでプロフィール未完了）
-  const isOnboardingRequired = !!(
-    user &&
-    !user.isAnonymous &&
-    (!userProfile || !userProfile.onboardingCompleted)
-  );
+  // オンボーディングは廃止。プロフィール入力は /mypage/settings から任意で行う
+  const isOnboardingRequired = false;
 
   // 認証トークン付きでAPIを呼び出すヘルパー
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}) => {
@@ -131,7 +127,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      // ユーザーがポップアップを閉じた場合は無視
+      if (firebaseError.code === 'auth/popup-closed-by-user' || firebaseError.code === 'auth/cancelled-popup-request') {
+        return;
+      }
       console.error('Error signing in with Google:', error);
       throw error;
     }
@@ -149,9 +150,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUpWithEmail = async (email: string, password: string, displayName: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // ユーザー名を設定
+      // ユーザー名をFirebase Authに設定
       if (userCredential.user) {
         await updateProfile(userCredential.user, { displayName });
+
+        // Firestoreにもプロフィールを保存
+        const token = await userCredential.user.getIdToken();
+        const profile = { nickname: displayName };
+        await fetch('/api/save-profile', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userCredential.user.uid,
+            profile,
+          }),
+        });
+        setUserProfile(profile as UserProfile);
       }
     } catch (error) {
       console.error('Error signing up with email:', error);

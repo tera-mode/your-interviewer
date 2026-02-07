@@ -16,7 +16,6 @@ function LoginContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // URLパラメータからモードを取得
     const modeParam = searchParams.get('mode');
     if (modeParam === 'signup') {
       setMode('signup');
@@ -24,14 +23,11 @@ function LoginContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    // 匿名ユーザーの場合は何もしない（ログインフローを進めるため）
     if (user && !loading && !user.isAnonymous) {
-      // オンボーディングが必要な場合はオンボーディングへ
       if (isOnboardingRequired) {
         router.push('/onboarding');
       } else {
-        // 通常のログイン済みユーザーの場合はHOMEにリダイレクト
-        router.push('/home');
+        router.push('/mypage');
       }
     }
   }, [user, loading, isOnboardingRequired, router]);
@@ -41,10 +37,12 @@ function LoginContent() {
     setError('');
     try {
       await signInWithGoogle();
-      router.push('/home');
-    } catch (error: any) {
-      console.error('ログインエラー:', error);
-      setError('ログインに失敗しました。もう一度お試しください。');
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      if (firebaseError.code !== 'auth/popup-closed-by-user' && firebaseError.code !== 'auth/cancelled-popup-request') {
+        console.error('ログインエラー:', error);
+        setError('ログインに失敗しました。もう一度お試しください。');
+      }
     } finally {
       setIsSigningIn(false);
     }
@@ -66,7 +64,12 @@ function LoginContent() {
         }
         await signUpWithEmail(email, password, displayName);
       }
-      router.push('/home');
+      // 新規登録の場合はスワイプ診断へ
+      if (mode === 'signup') {
+        router.push('/dig/swipe');
+      } else {
+        router.push('/mypage');
+      }
     } catch (error: any) {
       console.error('認証エラー:', error);
       if (error.code === 'auth/email-already-in-use') {
@@ -87,9 +90,9 @@ function LoginContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-main">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
           <p className="text-gray-600">読み込み中...</p>
         </div>
       </div>
@@ -97,15 +100,15 @@ function LoginContent() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-warm px-4 py-12">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-main px-4 py-12">
       {/* 装飾用グラデーションオーブ */}
-      <div className="gradient-orb gradient-orb-orange absolute -left-32 top-20 h-80 w-80" />
-      <div className="gradient-orb gradient-orb-yellow absolute -right-32 bottom-20 h-72 w-72" />
+      <div className="gradient-orb gradient-orb-emerald absolute -left-32 top-20 h-80 w-80" />
+      <div className="gradient-orb gradient-orb-amber absolute -right-32 bottom-20 h-72 w-72" />
 
       <main className="relative z-10 flex w-full max-w-md flex-col items-center gap-6 text-center">
         {/* ロゴ・タイトル */}
         <div className="flex flex-col gap-2">
-          <h1 className="bg-gradient-to-r from-orange-600 via-amber-500 to-orange-500 bg-clip-text text-4xl font-bold text-transparent">
+          <h1 className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 bg-clip-text text-4xl font-bold text-transparent">
             じぶんクラフト
           </h1>
           <p className="text-lg text-gray-600">
@@ -116,22 +119,22 @@ function LoginContent() {
         {/* ゲストユーザー向けメッセージ */}
         {user && user.isAnonymous && (
           <div className="glass w-full rounded-xl p-4 text-left">
-            <p className="text-sm text-orange-700">
+            <p className="text-sm text-emerald-700">
               現在ゲストとしてログインしています。<br />
-              ログインすることで、インタビュー履歴を永続的に保存できます。
+              ログインすることで、データを永続的に保存できます。
             </p>
           </div>
         )}
 
         {/* メイン認証フォーム */}
-        <div className="glass-card w-full rounded-3xl p-8">
+        <div className="glass-card w-full p-8">
           {/* タブ切り替え */}
-          <div className="mb-6 flex gap-2 rounded-xl bg-orange-100/50 p-1">
+          <div className="mb-6 flex gap-2 rounded-xl bg-emerald-100/50 p-1">
             <button
               onClick={() => setMode('login')}
               className={`flex-1 rounded-lg px-4 py-2 font-semibold transition-all ${
                 mode === 'login'
-                  ? 'bg-white text-orange-600 shadow-md'
+                  ? 'bg-white text-emerald-600 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -141,7 +144,7 @@ function LoginContent() {
               onClick={() => setMode('signup')}
               className={`flex-1 rounded-lg px-4 py-2 font-semibold transition-all ${
                 mode === 'signup'
-                  ? 'bg-white text-orange-600 shadow-md'
+                  ? 'bg-white text-emerald-600 shadow-md'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -151,7 +154,7 @@ function LoginContent() {
 
           {/* エラーメッセージ */}
           {error && (
-            <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+            <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-600">
               {error}
             </div>
           )}
@@ -160,14 +163,12 @@ function LoginContent() {
           <form onSubmit={handleEmailAuth} className="space-y-4">
             {mode === 'signup' && (
               <div className="text-left">
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  名前
-                </label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">名前</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
+                  className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                   placeholder="山田太郎"
                   required
                 />
@@ -175,28 +176,24 @@ function LoginContent() {
             )}
 
             <div className="text-left">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                メールアドレス
-              </label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">メールアドレス</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
+                className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 placeholder="example@email.com"
                 required
               />
             </div>
 
             <div className="text-left">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                パスワード
-              </label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">パスワード</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="glass-input w-full rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300 focus:outline-none"
+                className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 placeholder="6文字以上"
                 required
                 minLength={6}
@@ -206,28 +203,28 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isSigningIn}
-              className="btn-gradient-primary w-full rounded-full px-8 py-3 font-semibold text-white shadow-lg disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-8 py-3 font-semibold text-white shadow-lg disabled:opacity-50"
             >
               {isSigningIn
                 ? '処理中...'
                 : mode === 'login'
-                ? 'ログイン'
-                : '新規登録'}
+                  ? 'ログイン'
+                  : '新規登録'}
             </button>
           </form>
 
           {/* 区切り線 */}
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-200 to-transparent"></div>
             <span className="text-sm text-gray-500">または</span>
-            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-emerald-200 to-transparent"></div>
           </div>
 
           {/* Googleログインボタン */}
           <button
             onClick={handleGoogleSignIn}
             disabled={isSigningIn}
-            className="glass flex w-full items-center justify-center gap-3 rounded-full px-8 py-3 font-semibold text-gray-700 transition-all hover:bg-white/80 hover:shadow-md disabled:opacity-50"
+            className="glass flex w-full items-center justify-center gap-3 rounded-xl px-8 py-3 font-semibold text-gray-700 transition-all hover:bg-white/80 hover:shadow-md disabled:opacity-50"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -253,13 +250,13 @@ function LoginContent() {
 
         {/* 説明文 */}
         <p className="text-sm text-gray-600">
-          ログインすることで、インタビューデータを永続的に保存できます
+          ログインすることで、データを永続的に保存できます
         </p>
 
         {/* 戻るボタン */}
         <button
           onClick={() => router.push('/')}
-          className="text-gray-500 underline decoration-orange-300 underline-offset-4 hover:text-orange-600 hover:decoration-orange-500"
+          className="text-gray-500 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-600 hover:decoration-emerald-500"
         >
           トップに戻る
         </button>
@@ -270,14 +267,16 @@ function LoginContent() {
 
 export default function Login() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-warm">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm"></div>
-          <p className="text-gray-600">読み込み中...</p>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-main">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
+            <p className="text-gray-600">読み込み中...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginContent />
     </Suspense>
   );
