@@ -106,13 +106,13 @@ function CreateContent() {
         {isLoadingTraits ? (
           <div className="glass-card mb-6 p-6 text-center">
             <div className="flex items-center justify-center gap-3">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+              <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
               <p className="text-sm text-gray-600">特徴データを読み込み中...</p>
             </div>
           </div>
         ) : traitCount === 0 ? (
           <div className="glass-card mb-6 p-6 text-center">
-            <h3 className="mb-2 text-lg font-semibold text-sky-700">
+            <h3 className="mb-2 text-lg font-semibold text-emerald-700">
               特徴データがありません
             </h3>
             <p className="mb-4 text-sm text-gray-600">
@@ -120,7 +120,7 @@ function CreateContent() {
             </p>
             <button
               onClick={() => router.push('/dig/interview/select-mode')}
-              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-2 font-semibold text-white shadow-md"
+              className="btn-gradient-primary rounded-xl px-6 py-2 font-semibold text-white"
             >
               インタビューを始める
             </button>
@@ -137,11 +137,11 @@ function CreateContent() {
                 <button
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-8 py-3 font-bold text-white shadow-lg disabled:opacity-50"
+                  className="btn-gradient-primary rounded-xl px-8 py-3 font-bold text-white disabled:opacity-50"
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-2">
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
                       生成中...
                     </span>
                   ) : (
@@ -155,7 +155,7 @@ function CreateContent() {
                 <div className="glass-card mb-6 p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
-                      蓄積された特徴: <span className="font-bold text-sky-600">{traitCount}個</span>
+                      蓄積された特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
                     </span>
                   </div>
                 </div>
@@ -192,11 +192,11 @@ function CreateContent() {
                     <button
                       onClick={handleGenerate}
                       disabled={isGenerating}
-                      className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-8 py-3 font-bold text-white shadow-lg disabled:opacity-50"
+                      className="btn-gradient-primary rounded-xl px-8 py-3 font-bold text-white disabled:opacity-50"
                     >
                       {isGenerating ? (
                         <span className="flex items-center gap-2">
-                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
                           生成中...
                         </span>
                       ) : (
@@ -234,7 +234,7 @@ function CreateContent() {
                     </button>
                     <button
                       onClick={handleSave}
-                      className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white"
+                      className="btn-gradient-primary rounded-xl px-4 py-2 text-sm font-semibold text-white"
                     >
                       保存する
                     </button>
@@ -255,7 +255,7 @@ export default function CreateOutputPage() {
       fallback={
         <div className="flex min-h-[50vh] items-center justify-center">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+            <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
             <p className="text-sm text-gray-600">読み込み中...</p>
           </div>
         </div>

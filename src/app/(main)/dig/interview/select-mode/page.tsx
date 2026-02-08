@@ -42,12 +42,7 @@ export default function SelectModePage() {
 
       <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-6 text-center">
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              インタビューモードを選択
-            </h2>
-            <p className="text-sm text-gray-600">目的に合わせたモードを選んでください</p>
-          </div>
+          <p className="mb-6 text-center text-sm text-gray-600">目的に合わせたモードを選んでください</p>
 
           <div className="grid gap-4 md:grid-cols-3">
             {INTERVIEW_MODES.map((mode) => (

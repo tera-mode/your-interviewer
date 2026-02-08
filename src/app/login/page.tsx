@@ -3,16 +3,18 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { OccupationCategory } from '@/types';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading, isOnboardingRequired, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { user, loading, userProfile, isOnboardingRequired, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [occupation, setOccupation] = useState<OccupationCategory | ''>('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -26,11 +28,14 @@ function LoginContent() {
     if (user && !loading && !user.isAnonymous) {
       if (isOnboardingRequired) {
         router.push('/onboarding');
+      } else if (!userProfile?.occupation) {
+        // 職業未設定（Google登録など）→設定画面で入力を促す
+        router.push('/mypage/settings');
       } else {
         router.push('/mypage');
       }
     }
-  }, [user, loading, isOnboardingRequired, router]);
+  }, [user, loading, userProfile, isOnboardingRequired, router]);
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
@@ -58,11 +63,16 @@ function LoginContent() {
         await signInWithEmail(email, password);
       } else {
         if (!displayName.trim()) {
-          setError('名前を入力してください');
+          setError('ニックネームを入力してください');
           setIsSigningIn(false);
           return;
         }
-        await signUpWithEmail(email, password, displayName);
+        if (!occupation) {
+          setError('職業を選択してください');
+          setIsSigningIn(false);
+          return;
+        }
+        await signUpWithEmail(email, password, displayName, occupation);
       }
       // 新規登録の場合はスワイプ診断へ
       if (mode === 'signup') {
@@ -162,17 +172,43 @@ function LoginContent() {
           {/* メール/パスワードフォーム */}
           <form onSubmit={handleEmailAuth} className="space-y-4">
             {mode === 'signup' && (
-              <div className="text-left">
-                <label className="mb-1 block text-sm font-medium text-gray-700">名前</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                  placeholder="山田太郎"
-                  required
-                />
-              </div>
+              <>
+                <div className="text-left">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">ニックネーム</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    placeholder="たろう"
+                    required
+                  />
+                </div>
+                <div className="text-left">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">職業</label>
+                  <select
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value as OccupationCategory)}
+                    className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                    required
+                  >
+                    <option value="">選択してください</option>
+                    <option value="会社員">会社員</option>
+                    <option value="経営者">経営者</option>
+                    <option value="自営業">自営業</option>
+                    <option value="公務員">公務員</option>
+                    <option value="フリーランス">フリーランス</option>
+                    <option value="主婦/主夫">主婦/主夫</option>
+                    <option value="学生（小学生）">学生（小学生）</option>
+                    <option value="学生（中学生）">学生（中学生）</option>
+                    <option value="学生（高校生）">学生（高校生）</option>
+                    <option value="学生（大学生）">学生（大学生）</option>
+                    <option value="学生（大学院生）">学生（大学院生）</option>
+                    <option value="無職">無職</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </div>
+              </>
             )}
 
             <div className="text-left">

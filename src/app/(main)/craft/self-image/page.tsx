@@ -136,7 +136,7 @@ export default function SelfImagePage() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+          <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
           <p className="text-sm text-gray-600">読み込み中...</p>
         </div>
       </div>
@@ -162,12 +162,12 @@ export default function SelfImagePage() {
             <p className="mb-4 text-gray-700">
               自分画像を生成するには、特徴データが5個以上必要です
             </p>
-            <p className="mb-4 text-2xl font-bold text-sky-600">
+            <p className="mb-4 text-2xl font-bold text-emerald-600">
               現在: {traitCount} / 5 個
             </p>
             <button
               onClick={() => router.push('/dig/interview/select-mode')}
-              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 font-semibold text-white shadow-md"
+              className="btn-gradient-primary rounded-xl px-6 py-3 font-semibold text-white"
             >
               インタビューで特徴を増やす
             </button>
@@ -178,7 +178,7 @@ export default function SelfImagePage() {
         {canGenerate && (
           <div className="glass-card mb-6 p-6 text-center">
             <p className="mb-4 text-gray-700">
-              特徴データ: <span className="font-bold text-sky-600">{traitCount}個</span>
+              特徴データ: <span className="font-bold text-emerald-600">{traitCount}個</span>
             </p>
             <button
               onClick={handleGenerateImage}

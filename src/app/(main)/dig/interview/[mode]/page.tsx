@@ -19,7 +19,6 @@ export default function InterviewPage() {
   const params = useParams();
   const mode = params.mode as InterviewMode;
   const { user, userProfile } = useAuth();
-  usePageHeader({ hideHeader: true });
 
   const [interviewerId, setInterviewerId] = useState<InterviewerId | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -38,6 +37,23 @@ export default function InterviewPage() {
   const interviewer = interviewerId ? getInterviewer(interviewerId) : null;
   const modeConfig = getInterviewMode(mode);
   const isEndless = isEndlessMode(mode);
+
+  usePageHeader({
+    title: 'AIインタビュー',
+    showBackButton: true,
+    onBack: () => router.push('/dig'),
+    rightAction: modeConfig ? (
+      <div className="flex items-center gap-2">
+        <span className="text-lg">{modeConfig.icon}</span>
+        <span className="text-sm font-medium text-gray-700">{modeConfig.name}</span>
+        {isEndless && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-600">
+            エンドレス
+          </span>
+        )}
+      </div>
+    ) : undefined,
+  });
 
   useEffect(() => {
     if (!modeConfig) {
@@ -60,28 +76,23 @@ export default function InterviewPage() {
     const customization = Cookies.get('interviewer_customization') || '';
     const greetingStyle = getGreetingStyle(customization);
 
-    if (userProfile?.nickname && userProfile?.occupation) {
-      setUserNickname(userProfile.nickname);
-      const iceBreakQuestion = getRandomQuestion(mode, 'iceBreak') || '最近ハマってることってありますか？';
+    // ニックネームは登録時に取得済み。さん付けで呼ぶ
+    const nickname = userProfile?.nickname || user?.displayName || 'ゲスト';
+    setUserNickname(nickname);
 
-      const initialMessage: ChatMessage = {
-        role: 'assistant',
-        content: greetingStyle.hasCustom
-          ? `${greetingStyle.greeting}${userProfile.nickname}さん${greetingStyle.suffix} 私は${savedName}です${greetingStyle.suffix} 今日は「${modeConfig.name}」モードで、${userProfile.nickname}さんの魅力をたくさん引き出していきますね${greetingStyle.suffix}\n\n${iceBreakQuestion}`
-          : `こんにちは、${userProfile.nickname}さん！私は${savedName}です。今日は「${modeConfig.name}」モードで、${userProfile.nickname}さんの魅力をたくさん引き出していきますね。\n\n${iceBreakQuestion}`,
-        timestamp: new Date(),
-      };
-      setMessages([initialMessage]);
-    } else {
-      const initialMessage: ChatMessage = {
-        role: 'assistant',
-        content: greetingStyle.hasCustom
-          ? `${greetingStyle.greeting} 私は${savedName}です${greetingStyle.suffix} 今日は「${modeConfig.name}」モードであなたのことをたくさん教えてください${greetingStyle.suffix} まず、あなたのことをなんて呼んだらいいですか？`
-          : `こんにちは！私は${savedName}です。今日は「${modeConfig.name}」モードであなたのことをたくさん教えてください。まず、あなたのことをなんて呼んだらいいですか？`,
-        timestamp: new Date(),
-      };
-      setMessages([initialMessage]);
-    }
+    // 職業がある場合はテーマに沿ったアイスブレイク、なければ職業を聞く
+    const firstQuestion = userProfile?.occupation
+      ? (getRandomQuestion(mode, 'iceBreak') || '最近ハマってることってありますか？')
+      : '普段はどんなことして過ごしてますか？お仕事とか学校とか、なんでも教えてください！';
+
+    const initialMessage: ChatMessage = {
+      role: 'assistant',
+      content: greetingStyle.hasCustom
+        ? `${greetingStyle.greeting}${nickname}さん${greetingStyle.suffix} 私は${savedName}です${greetingStyle.suffix} 今日は「${modeConfig.name}」モードで、${nickname}さんの魅力をたくさん引き出していきますね${greetingStyle.suffix}\n\n${firstQuestion}`
+        : `こんにちは、${nickname}さん！私は${savedName}です。今日は「${modeConfig.name}」モードで、${nickname}さんの魅力をたくさん引き出していきますね。\n\n${firstQuestion}`,
+      timestamp: new Date(),
+    };
+    setMessages([initialMessage]);
   }, [router, mode, modeConfig, userProfile]);
 
   const getGreetingStyle = (customization: string): { hasCustom: boolean; greeting: string; suffix: string } => {
@@ -176,9 +187,10 @@ export default function InterviewPage() {
           messages: [...messages, userMessage],
           interviewerId,
           mode,
-          userProfile: userProfile?.nickname && userProfile?.occupation
-            ? { nickname: userProfile.nickname, occupation: userProfile.occupation }
-            : undefined,
+          userProfile: {
+            nickname: userNickname,
+            ...(userProfile?.occupation ? { occupation: userProfile.occupation } : {}),
+          },
           interviewerCustomization: interviewerCustomization || undefined,
         }),
       });
@@ -195,10 +207,6 @@ export default function InterviewPage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
       const updatedMessages = [...messages, userMessage, assistantMessage];
-
-      if (data.extractedNickname && !userNickname) {
-        setUserNickname(data.extractedNickname);
-      }
 
       if (!data.isCompleted) {
         extractTraits(currentInput, data.message, messages.length + 1);
@@ -259,9 +267,10 @@ export default function InterviewPage() {
           interviewerId,
           mode,
           forceComplete: true,
-          userProfile: userProfile?.nickname && userProfile?.occupation
-            ? { nickname: userProfile.nickname, occupation: userProfile.occupation }
-            : undefined,
+          userProfile: {
+            nickname: userNickname,
+            ...(userProfile?.occupation ? { occupation: userProfile.occupation } : {}),
+          },
           interviewerCustomization: interviewerCustomization || undefined,
         }),
       });
@@ -307,7 +316,7 @@ export default function InterviewPage() {
   }
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden">
+    <div className="relative flex h-[calc(100dvh-52px)] flex-col overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -318,36 +327,6 @@ export default function InterviewPage() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/90 via-teal-50/80 to-emerald-100/90" />
-      </div>
-
-      {/* Mode bar */}
-      <div className="relative z-10 glass border-b border-emerald-200 px-4 py-2">
-        <div className="mx-auto max-w-4xl flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push('/dig')}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              ← ほる
-            </button>
-            <span className="text-gray-300">|</span>
-            <span className="text-lg">{modeConfig.icon}</span>
-            <span className="text-sm font-medium text-gray-700">{modeConfig.name}</span>
-            {isEndless && (
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-600">
-                エンドレス
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {userNickname && (
-              <span className="text-xs text-gray-500">{userNickname}さん</span>
-            )}
-            {isCompleted && (
-              <span className="text-sm font-semibold text-green-700">✓ 完了</span>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* SP: Collapsible traits */}

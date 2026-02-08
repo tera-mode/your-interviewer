@@ -96,7 +96,7 @@ export default function SwipePage() {
   if (isSubmitting) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 spinner-warm mb-4"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 spinner-warm mb-4"></div>
         <p className="text-lg font-semibold text-gray-700">あなたの特徴を分析中...</p>
         <p className="mt-2 text-sm text-gray-500">AIが回答を分析しています</p>
       </div>

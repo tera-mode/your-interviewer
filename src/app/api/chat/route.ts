@@ -15,8 +15,8 @@ interface InterviewState {
   mode: InterviewMode;
 }
 
-// Phase 1: 基本情報収集のステップ（簡素化: 2ステップのみ）
-const FIXED_INTERVIEW_STEPS = ['nickname', 'occupation'];
+// Phase 1: 基本情報収集のステップ（ニックネームは登録時に取得済み、職業のみ）
+const FIXED_INTERVIEW_STEPS = ['occupation'];
 
 /**
  * カスタム性格をシステムプロンプトに組み込むためのヘルパー関数
@@ -172,13 +172,14 @@ async function generateInitialGreeting(
   interviewer: { tone: string; character: string },
   mode: InterviewMode,
   interviewerName?: string,
-  userProfile?: { nickname: string; occupation: string },
+  userProfile?: { nickname: string; occupation?: string },
   interviewerCustomization?: string
 ) {
   const model = getGeminiModel();
   const modeConfig = getInterviewMode(mode);
   const modeName = modeConfig?.name || '基本インタビュー';
   const iceBreakQuestion = getRandomQuestion(mode, 'iceBreak') || '最近ハマってることってありますか？';
+  const nickname = userProfile?.nickname || 'ゲスト';
 
   // 統一されたヘルパー関数でキャラクター設定を構築
   const personality = buildPersonalityContext(
@@ -188,34 +189,17 @@ async function generateInitialGreeting(
   );
 
   try {
-    const prompt = userProfile?.nickname && userProfile?.occupation
-      ? `${personality.header}あなたは${interviewerName || 'インタビュワー'}です。
+    const prompt = `${personality.header}あなたは${interviewerName || 'インタビュワー'}です。
 
 ${personality.characterSection}
 
 ## 状況
-${userProfile.nickname}さんとこれから「${modeName}」モードでインタビューを始めます。
+${nickname}さんとこれから「${modeName}」モードでインタビューを始めます。
 
 ## 指示
 1. 自己紹介をして、親しみやすく挨拶してください
 2. 今日のインタビューモードについて簡単に説明してください
 3. 以下のアイスブレイク質問で会話を始めてください：「${iceBreakQuestion}」
-
-## ルール
-- 自然で親しみやすい雰囲気で
-- 2〜4文程度で
-- 堅苦しくならないように`
-      : `${personality.header}あなたは${interviewerName || 'インタビュワー'}です。
-
-${personality.characterSection}
-
-## 状況
-これから「${modeName}」モードでインタビューを始めます。
-
-## 指示
-1. 自己紹介をして、親しみやすく挨拶してください
-2. 今日のインタビューモードについて簡単に説明してください
-3. まず相手の呼び名を聞いてください（名前、ニックネーム、何でもOK）
 
 ## ルール
 - 自然で親しみやすい雰囲気で
@@ -232,10 +216,7 @@ ${personality.characterSection}
     });
   } catch (error) {
     console.error('Error generating initial greeting:', error);
-    // フォールバック
-    const fallbackGreeting = userProfile?.nickname
-      ? `こんにちは、${userProfile.nickname}さん！私は${interviewerName}です。今日は「${modeName}」モードで、${userProfile.nickname}さんの魅力をたくさん引き出していきますね。\n\n${iceBreakQuestion}`
-      : `こんにちは！私は${interviewerName}です。今日は「${modeName}」モードであなたのことをたくさん教えてください。まず、あなたのことをなんて呼んだらいいですか？`;
+    const fallbackGreeting = `こんにちは、${nickname}さん！私は${interviewerName}です。今日は「${modeName}」モードで、${nickname}さんの魅力をたくさん引き出していきますね。\n\n${iceBreakQuestion}`;
 
     return NextResponse.json({
       message: fallbackGreeting,
@@ -357,44 +338,6 @@ ${items
   }
 }
 
-/**
- * ユーザーの回答から呼び名を抽出
- */
-async function extractNickname(userResponse: string): Promise<string> {
-  const model = getGeminiModel();
-
-  const prompt = `ユーザーが「なんて呼べばいいか」に対して回答しました。
-回答から適切な呼び名（名前）を抽出してください。
-
-【ユーザーの回答】
-${userResponse}
-
-【ルール】
-- 回答から呼び名として使える単語を抽出
-- 「〜です」「〜と呼んでください」などの文末表現は除去
-- ニックネーム、名前、あだ名などを適切に抽出
-- 抽出した呼び名のみを出力（説明文は不要）
-
-【出力例】
-- 入力: "まさと呼んでください" → 出力: まさ
-- 入力: "田中太郎です" → 出力: 太郎
-- 入力: "みんなからはタロウって呼ばれてます" → 出力: タロウ
-- 入力: "けんじ" → 出力: けんじ
-
-【出力】`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
-    // 余計な改行や空白を除去
-    return responseText.split('\n')[0].trim();
-  } catch (error) {
-    console.error('Error extracting nickname:', error);
-    // フォールバック: 元の回答をそのまま使用（最初の10文字まで）
-    return userResponse.replace(/です$|と呼んで.*$|って呼んで.*$/g, '').trim().slice(0, 10);
-  }
-}
-
 // ヘルパー関数: assistantメッセージから質問文を抽出
 function extractQuestionFromMessage(content: string): string {
   const sentences = content.split(/[。.]/);
@@ -407,7 +350,7 @@ function extractQuestionFromMessage(content: string): string {
 async function analyzeInterviewState(
   messages: ChatMessage[],
   mode: InterviewMode,
-  userProfile?: { nickname: string; occupation: string }
+  userProfile?: { nickname: string; occupation?: string }
 ): Promise<InterviewState> {
   const collectedData: Partial<FixedUserData> = {};
   const dynamicData: DynamicData = {};
@@ -420,18 +363,19 @@ async function analyzeInterviewState(
   // メッセージ履歴から収集済みの情報を抽出
   const userMessages = messages.filter((msg) => msg.role === 'user');
 
-  // === userProfileがある場合は固定質問フェーズをスキップ ===
-  if (userProfile?.nickname && userProfile?.occupation) {
-    collectedData.nickname = userProfile.nickname;
-    collectedData.occupation = userProfile.occupation;
-    currentStep = FIXED_INTERVIEW_STEPS.length; // 固定質問フェーズ完了済みとして扱う
+  // ニックネームはクライアントから常に渡される（登録時に取得済み）
+  collectedData.nickname = userProfile?.nickname || 'ゲスト';
 
-    // 深掘り質問の抽出
+  // === nickname + occupation が揃っている場合は Phase 1 をスキップ ===
+  if (userProfile?.nickname && userProfile?.occupation) {
+    collectedData.occupation = userProfile.occupation;
+    currentStep = FIXED_INTERVIEW_STEPS.length; // Phase 1 完了済み
+
+    // 全ユーザーメッセージを深掘りデータとして抽出
     const assistantMessages = messages.filter((msg) => msg.role === 'assistant');
     userMessages.forEach((userMsg, index) => {
-      // 最初のassistantメッセージ（挨拶）の後のやり取りを深掘り質問として扱う
-      const questionMsg = assistantMessages[index]; // 0番目が最初の深掘り質問
-      if (questionMsg && index > 0) { // index 0はユーザーの最初の回答
+      const questionMsg = assistantMessages[index];
+      if (questionMsg && index > 0) {
         const key = `dynamic_${index}`;
         dynamicData[key] = {
           question: extractQuestionFromMessage(questionMsg.content),
@@ -439,7 +383,6 @@ async function analyzeInterviewState(
           category: '',
         };
       } else if (index === 0) {
-        // 最初の回答も深掘りデータとして保存
         const key = `dynamic_1`;
         dynamicData[key] = {
           question: extractQuestionFromMessage(assistantMessages[0]?.content || ''),
@@ -460,20 +403,10 @@ async function analyzeInterviewState(
     };
   }
 
-  // === Phase 1: 固定情報の抽出（簡素化: 2ステップ） ===
-
-  // ステップ1: 呼び名を抽出
+  // === Phase 1: 職業のみ収集（1ステップ） ===
   if (userMessages.length >= 1 && currentStep === 0) {
-    const nicknameResponse = userMessages[0].content;
-    // AIで呼び名を抽出
-    collectedData.nickname = await extractNickname(nicknameResponse);
-    currentStep = 1;
-  }
-
-  // ステップ2: 職業を抽出
-  if (userMessages.length >= 2 && currentStep === 1) {
-    collectedData.occupation = userMessages[1].content;
-    currentStep = 2; // Phase 1完了
+    collectedData.occupation = userMessages[0].content;
+    currentStep = 1; // Phase 1 完了
   }
 
   // === Phase 2: 深掘り情報の抽出 ===
@@ -483,8 +416,8 @@ async function analyzeInterviewState(
     const assistantMessages = messages.filter((msg) => msg.role === 'assistant');
     const phase2UserMessages = userMessages.slice(FIXED_INTERVIEW_STEPS.length);
 
-    // Phase 2の質問はassistantメッセージのインデックス3以降
-    // （挨拶1個 + Phase 1の質問2個 = インデックス3から）
+    // Phase 2の質問はassistantメッセージのインデックス2以降
+    // （挨拶1個 + Phase 1の質問1個 = インデックス2から）
     phase2UserMessages.forEach((userMsg, index) => {
       const questionIndex = FIXED_INTERVIEW_STEPS.length + 1 + index;
       const questionMsg = assistantMessages[questionIndex];
@@ -494,7 +427,7 @@ async function analyzeInterviewState(
         dynamicData[key] = {
           question: extractQuestionFromMessage(questionMsg.content),
           answer: userMsg.content,
-          category: '', // 後でAIに分類させる
+          category: '',
         };
         currentStep = FIXED_INTERVIEW_STEPS.length + index + 1;
       }
@@ -544,6 +477,22 @@ function detectTopicRepetition(messages?: ChatMessage[]): string {
   return '';
 }
 
+/**
+ * 職業に応じた質問の配慮指示を返す
+ */
+function getOccupationGuidance(occupation: string): string {
+  if (occupation.startsWith('学生')) {
+    return `対象者は「${occupation}」です。「仕事」ではなく「学校生活」「勉強」「部活」「サークル」等の文脈で質問してください。`;
+  }
+  if (occupation === '主婦/主夫') {
+    return `対象者は「${occupation}」です。「仕事」ではなく「日常」「家庭」「趣味」「子育て」等の文脈で質問してください。`;
+  }
+  if (occupation === '無職') {
+    return `対象者の職業は「${occupation}」です。仕事関連の質問は避け、趣味・関心・日常生活について質問してください。`;
+  }
+  return `対象者の職業は「${occupation}」です。仕事についても自然に質問してOKです。`;
+}
+
 function generateSystemPrompt(
   interviewer: { tone: string; character: string },
   state: InterviewState,
@@ -557,22 +506,9 @@ function generateSystemPrompt(
   const questionBank = modeConfig?.questionBank;
   const deepDiveQuestions = modeConfig?.deepDiveQuestions || [];
 
-  // === Phase 1: 固定情報収集モード（簡素化: 2ステップ） ===
+  // === Phase 1: 職業収集モード（1ステップ） ===
   if (!state.isFixedPhaseComplete) {
-    const nextStep = FIXED_INTERVIEW_STEPS[state.currentStep];
-
-    let stepInstruction = '';
-
-    switch (nextStep) {
-      case 'nickname':
-        stepInstruction = 'まず、あなたのことをなんて呼んだらいいか聞いてください。名前でもニックネームでも、呼ばれたい名前を教えてもらってください。';
-        break;
-      case 'occupation':
-        stepInstruction = 'お仕事や普段何をしているか（学生、会社員、フリーランスなど）を聞いてください。';
-        break;
-      default:
-        stepInstruction = '';
-    }
+    const stepInstruction = '普段どんなことをして過ごしているか聞いてください。お仕事、学校、家事など、どんな形でもOKという雰囲気で。例: 「普段はどんなことして過ごしてますか？お仕事とか学校とか」';
 
     const progressText = isEndlessMode(state.mode)
       ? `${state.currentStep} ステップ完了（エンドレスモード）`
@@ -685,6 +621,9 @@ ${personality.characterSection}
 ## インタビュー対象者
 - 呼び名: ${state.collectedData.nickname}さん
 - 職業: ${state.collectedData.occupation}
+
+## 職業に応じた配慮
+${getOccupationGuidance(state.collectedData.occupation || '')}
 
 ## インタビューモード: ${modeConfig?.name || '基本インタビュー'}
 ${modeFocus}

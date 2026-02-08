@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTraits } from '@/contexts/TraitsContext';
 import { TraitCard } from '@/components/interview';
 import { TRAIT_CATEGORY_LABELS } from '@/types';
-import { Pickaxe, Lightbulb } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
 
 export default function MyPage() {
@@ -41,7 +41,7 @@ export default function MyPage() {
 
   return (
     <>
-      <div className="px-4 py-4">
+      <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl">
           {/* Profile summary */}
           <div className="glass-card mb-6 p-4">
@@ -76,35 +76,27 @@ export default function MyPage() {
 
           {/* Craft CTA */}
           {traitCount > 0 && (
-            <div className="glass-card mb-4 p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-200 to-yellow-200">
-                  <Lightbulb size={20} className="text-amber-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700">この特徴を使って表現しよう！</p>
-                </div>
-                <button
-                  onClick={() => router.push('/craft')}
-                  className="rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 px-4 py-2 text-sm font-semibold text-white shadow-md"
-                >
-                  つくるへ行く
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={() => router.push('/craft')}
+              className="mb-4 flex w-full items-center justify-between rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 px-4 py-3 transition-all hover:bg-emerald-50"
+            >
+              <span className="text-sm text-emerald-700">この特徴を使って表現しよう</span>
+              <span className="flex items-center gap-1 text-sm font-semibold text-emerald-600">
+                つくる <ArrowRight size={14} />
+              </span>
+            </button>
           )}
 
           {/* Trait stats */}
           <div className="glass-card mb-4 p-4">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-gray-700">
-                合計: {traitCount}個の特徴
+              <span className="text-sm font-medium text-gray-700">
+                蓄積された特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
               </span>
               <button
                 onClick={() => router.push('/dig')}
-                className="flex items-center gap-1 text-sm text-emerald-600"
+                className="text-sm text-emerald-600 underline"
               >
-                <Pickaxe size={14} />
                 もっとほる
               </button>
             </div>

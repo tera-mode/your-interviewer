@@ -73,7 +73,7 @@ export default function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-yellow-200">
                 <Pickaxe size={24} className="text-amber-600" />
               </div>
-              <h3 className="font-bold text-gray-800">ほる</h3>
+              <h3 className="font-bold text-gray-800">じぶんを「ほる」</h3>
               <p className="text-sm text-gray-600">
                 スワイプ診断やAIインタビューで自分の特徴を掘り出す
               </p>
@@ -82,7 +82,7 @@ export default function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-200 to-teal-200">
                 <User size={24} className="text-emerald-600" />
               </div>
-              <h3 className="font-bold text-gray-800">あつめる</h3>
+              <h3 className="font-bold text-gray-800">じぶんを「あつめる」</h3>
               <p className="text-sm text-gray-600">
                 発見した特徴がどんどん蓄積。自分の特徴図鑑ができる
               </p>
@@ -91,7 +91,7 @@ export default function Home() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sky-200 to-blue-200">
                 <Hammer size={24} className="text-sky-600" />
               </div>
-              <h3 className="font-bold text-gray-800">つくる</h3>
+              <h3 className="font-bold text-gray-800">じぶんを「つくる」</h3>
               <p className="text-sm text-gray-600">
                 集めた特徴から自己PR文やプロフィールを自動生成
               </p>

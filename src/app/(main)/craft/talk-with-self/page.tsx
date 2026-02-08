@@ -129,7 +129,7 @@ export default function TalkWithSelfPage() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+          <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
           <p className="text-sm text-gray-600">読み込み中...</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function TalkWithSelfPage() {
   const canUse = traitCount >= 10;
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-4">
+    <div className="flex flex-1 flex-col px-4 py-6">
       <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
         {/* 利用不可メッセージ */}
         {!canUse && (
@@ -147,12 +147,12 @@ export default function TalkWithSelfPage() {
             <p className="mb-4 text-gray-700">
               自分AIと話すには、特徴データが10個以上必要です
             </p>
-            <p className="mb-4 text-2xl font-bold text-sky-600">
+            <p className="mb-4 text-2xl font-bold text-emerald-600">
               現在: {traitCount} / 10 個
             </p>
             <button
               onClick={() => router.push('/dig/interview/select-mode')}
-              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 font-semibold text-white shadow-md"
+              className="btn-gradient-primary rounded-xl px-6 py-3 font-semibold text-white"
             >
               インタビューで特徴を増やす
             </button>

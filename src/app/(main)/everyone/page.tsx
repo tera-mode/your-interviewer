@@ -11,7 +11,7 @@ export default function EveryonePage() {
       <div className="gradient-orb gradient-orb-emerald absolute -right-40 top-20 h-96 w-96" />
       <div className="gradient-orb gradient-orb-amber absolute -left-40 bottom-20 h-80 w-80" />
 
-      <div className="relative z-10 px-4 py-8">
+      <div className="relative z-10 px-4 py-6">
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-6 flex justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-rose-200 to-pink-200">

@@ -48,7 +48,7 @@ export default function OutputHistoryPage() {
         <div className="mb-6 flex justify-end">
           <button
             onClick={() => router.push('/craft/create')}
-            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 font-semibold text-white shadow-md"
+            className="flex items-center gap-1.5 btn-gradient-primary rounded-xl px-4 py-2 font-semibold text-white"
           >
             <Plus size={16} />
             新規作成
@@ -58,13 +58,13 @@ export default function OutputHistoryPage() {
         {/* ゲストユーザー向けメッセージ */}
         {user?.isAnonymous && (
           <div className="glass-card mb-6 p-6 text-center">
-            <h3 className="mb-2 text-lg font-semibold text-sky-700">ログインが必要です</h3>
+            <h3 className="mb-2 text-lg font-semibold text-emerald-700">ログインが必要です</h3>
             <p className="mb-4 text-sm text-gray-600">
               アウトプット機能を利用するには、ログインしてください。
             </p>
             <button
               onClick={() => router.push('/login')}
-              className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-6 py-2 font-semibold text-white"
+              className="btn-gradient-primary rounded-xl px-6 py-2 font-semibold text-white"
             >
               ログイン
             </button>
@@ -76,7 +76,7 @@ export default function OutputHistoryPage() {
             {isLoadingOutputs ? (
               <div className="glass-card p-8 text-center">
                 <div className="flex items-center justify-center gap-3">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+                  <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
                   <p className="text-sm text-gray-600">読み込み中...</p>
                 </div>
               </div>
@@ -91,7 +91,7 @@ export default function OutputHistoryPage() {
                 </p>
                 <button
                   onClick={() => router.push('/craft/create')}
-                  className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-6 py-2 font-semibold text-white"
+                  className="btn-gradient-primary rounded-xl px-6 py-2 font-semibold text-white"
                 >
                   アウトプットを作成
                 </button>
@@ -110,7 +110,7 @@ export default function OutputHistoryPage() {
                     <button
                       key={output.id}
                       onClick={() => router.push(`/craft/${output.id}`)}
-                      className="glass-card w-full p-5 text-left transition-all hover:shadow-md"
+                      className="glass-card w-full p-4 text-left transition-all hover:shadow-md"
                     >
                       <div className="flex items-start gap-4">
                         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-200 to-blue-200 text-2xl">

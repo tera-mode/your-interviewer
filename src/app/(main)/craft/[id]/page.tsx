@@ -111,7 +111,7 @@ export default function OutputDetailPage() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-sky-400 border-t-transparent"></div>
+          <div className="h-6 w-6 animate-spin rounded-full border-4 spinner-warm"></div>
           <p className="text-sm text-gray-600">読み込み中...</p>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function OutputDetailPage() {
                   <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                    className="btn-gradient-primary rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     {isSaving ? '保存中...' : '保存'}
                   </button>

@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import Cookies from 'js-cookie';
-import { UserProfile, UserInterviewer } from '@/types';
+import { UserProfile, UserInterviewer, OccupationCategory } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +25,7 @@ interface AuthContextType {
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, displayName: string, occupation: OccupationCategory) => Promise<void>;
   signInAsGuest: () => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
@@ -147,7 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signUpWithEmail = async (email: string, password: string, displayName: string) => {
+  const signUpWithEmail = async (email: string, password: string, displayName: string, occupation: OccupationCategory) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       // ユーザー名をFirebase Authに設定
@@ -156,7 +156,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // Firestoreにもプロフィールを保存
         const token = await userCredential.user.getIdToken();
-        const profile = { nickname: displayName };
+        const profile = { nickname: displayName, occupation };
         await fetch('/api/save-profile', {
           method: 'POST',
           headers: {

@@ -105,10 +105,7 @@ export default function SelectInterviewer() {
 
       <div className="px-4 py-6">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900">インタビュワーを選んでください</h2>
-            <p className="mt-1 text-sm text-gray-600">画像をタップして選択</p>
-          </div>
+          <p className="mb-6 text-center text-sm text-gray-600">画像をタップして選択</p>
 
           <div className="grid gap-6 md:grid-cols-2">
             {INTERVIEWERS.map((interviewer) => (
