@@ -43,7 +43,7 @@ export default function CatchcopyPage() {
   };
 
   useEffect(() => {
-    if (user && !user.isAnonymous) {
+    if (user) {
       loadHistory();
     } else {
       setIsLoadingHistory(false);

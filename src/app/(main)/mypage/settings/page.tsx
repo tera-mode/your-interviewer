@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { INTERVIEWERS } from '@/lib/interviewers';
 import { InterviewerId, OccupationCategory } from '@/types';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
-import { LogOut, ChevronRight } from 'lucide-react';
+import { LogOut, RotateCcw, ChevronRight } from 'lucide-react';
 
 const OCCUPATION_OPTIONS: OccupationCategory[] = [
   '会社員', '経営者', '自営業', '公務員', 'フリーランス',
@@ -18,16 +18,16 @@ const OCCUPATION_OPTIONS: OccupationCategory[] = [
 
 const FAQ_ITEMS = [
   {
-    question: 'インタビューは何回でも受けられますか？',
-    answer: 'はい、何回でもインタビューを受けることができます。インタビューを重ねるほど、あなたの特徴データが蓄積され、より精度の高いアウトプットを生成できるようになります。',
+    question: '特徴はどうやって集めるの？',
+    answer: '「ほる」タブから、1分スワイプ診断やAIインタビューで特徴を発見できます。スワイプ診断は1日1回、インタビューは何度でも受けられます。繰り返すほど特徴が増え、アウトプットの精度も上がります。',
   },
   {
     question: 'ゲストモードとログインの違いは？',
-    answer: 'ゲストモードでは一時的にサービスを利用できますが、データは保存されません。ログインすると、インタビュー履歴、特徴データ、アウトプットなどが永続的に保存されます。',
+    answer: 'ゲストモードでもスワイプ診断・インタビュー・キャッチコピー生成が利用できますが、アプリを閉じるとデータが消える場合があります。ログインすると、特徴データやアウトプットが永続的に保存されます。',
   },
   {
-    question: 'アウトプットはどのように作成されますか？',
-    answer: 'インタビューで抽出された特徴データをAIが分析し、SNSプロフィールや自己PR文などを自動生成します。生成後は自由に編集することもできます。',
+    question: '「つくる」ではどんなことができる？',
+    answer: '集めた特徴データをもとに、キャッチコピー・自分画像・自己PR文・SNSプロフィールなどをAIが自動生成します。キャッチコピーは1日1回、画像生成は特徴5個以上から利用できます。',
   },
   {
     question: 'データは安全ですか？',
@@ -124,6 +124,22 @@ export default function SettingsPage() {
       router.push('/');
     } catch {
       alert('ログアウトに失敗しました。');
+    }
+  };
+
+  const handleGuestReset = async () => {
+    if (!confirm('すべてのデータを削除して、最初からやり直しますか？')) return;
+    try {
+      await signOut();
+      // ゲスト関連データをすべて削除
+      localStorage.clear();
+      sessionStorage.clear();
+      // すべてのCookieを削除
+      const allCookies = Cookies.get();
+      Object.keys(allCookies).forEach((name) => Cookies.remove(name, { path: '/' }));
+      router.push('/');
+    } catch {
+      alert('リセットに失敗しました。');
     }
   };
 
@@ -311,14 +327,42 @@ export default function SettingsPage() {
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
           )}
 
-          {/* Logout */}
-          <button
-            onClick={handleSignOut}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 font-semibold text-gray-600 transition-all hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-          >
-            <LogOut size={18} />
-            ログアウト
-          </button>
+          {/* Legal links */}
+          <div className="glass-card p-4">
+            <div className="space-y-3">
+              <a href="https://www.laiv.jp/terms" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between text-sm text-gray-700 hover:text-emerald-600">
+                <span>利用規約</span>
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
+              <a href="https://www.laiv.jp/privacy" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between text-sm text-gray-700 hover:text-emerald-600">
+                <span>プライバシーポリシー</span>
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
+              <a href="https://www.laiv.jp/contact/service" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between text-sm text-gray-700 hover:text-emerald-600">
+                <span>お問い合わせ</span>
+                <ChevronRight size={16} className="text-gray-400" />
+              </a>
+            </div>
+          </div>
+
+          {/* Logout / Guest Reset */}
+          {isGuest ? (
+            <button
+              onClick={handleGuestReset}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 font-semibold text-gray-600 transition-all hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+            >
+              <RotateCcw size={18} />
+              新しく作りなおす
+            </button>
+          ) : (
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/80 px-4 py-3 font-semibold text-gray-600 transition-all hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+            >
+              <LogOut size={18} />
+              ログアウト
+            </button>
+          )}
         </div>
       </div>
     </>

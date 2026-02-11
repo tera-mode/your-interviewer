@@ -23,6 +23,7 @@ export default function CraftPage() {
       buttonGradient: 'from-amber-500 to-orange-500',
       href: '/craft/catchcopy',
       minTraits: 3,
+      guestAllowed: true,
     },
     {
       title: '自分画像生成',
@@ -88,13 +89,13 @@ export default function CraftPage() {
               特徴データがありません
             </h3>
             <p className="mb-4 text-sm text-gray-600">
-              まずはインタビューを受けて、あなたの特徴を発見しましょう。
+              まずはスワイプ診断やインタビューを活用し、あなたの特徴を発見しましょう。
             </p>
             <button
               onClick={() => router.push('/dig')}
               className="btn-gradient-primary rounded-xl px-6 py-2 font-semibold text-white"
             >
-              ほるに行く
+              特徴をほりに行く
             </button>
           </div>
         ) : (
@@ -103,7 +104,7 @@ export default function CraftPage() {
             <div className="glass-card mb-4 p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">
-                  蓄積された特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
+                  集めた特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
                 </span>
                 <button
                   onClick={() => router.push('/mypage')}
@@ -118,8 +119,9 @@ export default function CraftPage() {
             <div className="mb-6 space-y-4">
               {craftMenuItems.map((item) => {
                 const isGuest = user?.isAnonymous;
-                const isLocked = item.minTraits > 0 && (traitCount < item.minTraits || isGuest);
-                const disabledMessage = isGuest && item.minTraits > 0
+                const needsLogin = isGuest && item.minTraits > 0 && !item.guestAllowed;
+                const isLocked = item.minTraits > 0 && (traitCount < item.minTraits || needsLogin);
+                const disabledMessage = needsLogin
                   ? 'ログインが必要です'
                   : `特徴${item.minTraits}個以上必要（${traitCount}/${item.minTraits}）`;
 

@@ -44,7 +44,7 @@ export default function BottomNav() {
                 className={isActive ? '' : 'text-gray-400'}
               />
               <span
-                className="text-[10px] font-medium"
+                className={`text-[10px] font-medium ${isActive ? '' : 'text-gray-400'}`}
                 style={isActive ? { color: tab.color } : undefined}
               >
                 {isActive ? '' : ''}{tab.label}

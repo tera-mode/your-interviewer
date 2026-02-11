@@ -91,7 +91,7 @@ export default function MyPage() {
           <div className="glass-card mb-4 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">
-                蓄積された特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
+                集めた特徴: <span className="font-bold text-emerald-600">{traitCount}個</span>
               </span>
               <button
                 onClick={() => router.push('/dig')}

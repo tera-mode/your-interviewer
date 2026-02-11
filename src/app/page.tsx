@@ -127,6 +127,13 @@ export default function Home() {
             ログイン
           </button>
         </div>
+
+        {/* Legal links */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500">
+          <a href="https://www.laiv.jp/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-600">利用規約</a>
+          <a href="https://www.laiv.jp/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-600">プライバシーポリシー</a>
+          <a href="https://www.laiv.jp/contact/service" target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-600">お問い合わせ</a>
+        </div>
       </main>
     </div>
   );
