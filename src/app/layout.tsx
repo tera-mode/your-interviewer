@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "じぶんクラフト",
   description: "AIとの会話や診断で自分の特徴を集め、自己PR・プロフィール等のアウトプットを生成",
+  icons: {
+    icon: "/image/mecraft_fav.png",
+    apple: "/image/mecraft_fav.png",
+  },
 };
 
 export default function RootLayout({
