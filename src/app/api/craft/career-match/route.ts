@@ -13,6 +13,8 @@ interface CareerMatchRequest {
   userProfile?: {
     nickname?: string;
     occupation?: string;
+    gender?: string;
+    birthYear?: number;
   };
 }
 
@@ -83,10 +85,18 @@ export async function POST(request: NextRequest) {
 
     const traitsSummary = formatTraitsForPrompt(traits);
 
+    const currentYear = new Date().getFullYear();
+    const age = userProfile?.birthYear ? currentYear - userProfile.birthYear : null;
+
     const profileInfo = userProfile
       ? `【ユーザー情報】
 - 呼び名: ${userProfile.nickname || '不明'}
 - 職業: ${userProfile.occupation || '不明'}
+- 性別: ${userProfile.gender || '不明'}
+- 年齢: ${age ? `${age}歳` : '不明'}
+
+※ 年収の推定は上記の年齢と職業を考慮し、日本の年齢別平均年収を参考に現実的な範囲にしてください。
+※ 年齢が若い場合（〜25歳程度）は新卒〜若手としての市場価値を算出してください。
 
 `
       : '';
@@ -125,9 +135,9 @@ ${traitsSummary}
 
 【診断の基準】
 - 職種は日本の労働市場で実在する具体的なものにする（3〜5件）
-- 年収は日本円で、該当職種の日本における一般的なレンジをベースに算出する
+- 年収は日本円で、該当職種の日本における一般的なレンジをベースに、ユーザーの年齢における日本の年齢別平均年収も参考にして算出する
 - 特徴の組み合わせのユニーク性を加味して年収を調整する
-- 年齢・職歴が不明な場合は20代後半〜30代前半を想定する
+- 年齢が判明している場合はその年齢に応じた現実的な年収帯にする。年齢不明の場合は20代後半〜30代前半を想定する
 - マッチ度は特徴との関連度合いから0〜100で算出する
 - 理由は具体的な特徴名を引用して説明する
 - ポジティブかつ現実的なトーンで書く`;

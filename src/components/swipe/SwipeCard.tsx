@@ -184,17 +184,19 @@ export default function SwipeCard({ question, currentIndex, totalCount, onSelect
           あなたはどっち？
         </h3>
 
-        {/* Option labels */}
-        <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-700">A</span>
-          <span className="text-sm font-medium text-stone-700">{question.optionA}</span>
-        </div>
+        {/* Option labels - horizontal layout */}
+        <div className="flex items-stretch gap-3">
+          <div className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-amber-50 p-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-700">A</span>
+            <span className="text-base font-semibold text-stone-700 text-center leading-snug">{question.optionA}</span>
+          </div>
 
-        <div className="mb-2 text-center text-xs text-stone-400">or</div>
+          <div className="flex items-center text-xs text-stone-400">or</div>
 
-        <div className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-200 text-sm font-bold text-emerald-700">B</span>
-          <span className="text-sm font-medium text-stone-700">{question.optionB}</span>
+          <div className="flex flex-1 flex-col items-center gap-2 rounded-xl bg-emerald-50 p-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-200 text-sm font-bold text-emerald-700">B</span>
+            <span className="text-base font-semibold text-stone-700 text-center leading-snug">{question.optionB}</span>
+          </div>
         </div>
       </div>
 

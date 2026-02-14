@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Gem, ArrowRight, RotateCcw, Pickaxe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileFieldKey } from '@/types/profile';
+import ProfileRequirementModal from '@/components/ui/ProfileRequirementModal';
 import { useTraits } from '@/contexts/TraitsContext';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
 import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
@@ -68,7 +70,7 @@ const RANK_BADGE_COLORS: Record<string, string> = {
 
 export default function RarityPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { traits, traitCount } = useTraits();
   usePageHeader({ title: 'じぶんレアリティ診断', showBackButton: true, onBack: () => router.push('/craft') });
 
@@ -78,6 +80,7 @@ export default function RarityPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const canDiagnose = traitCount >= MIN_TRAITS;
 
@@ -106,6 +109,12 @@ export default function RarityPage() {
 
   const handleDiagnose = async () => {
     if (!user || user.isAnonymous || !canDiagnose) return;
+
+    // プロフィールチェック（birthYear）
+    if (!userProfile?.birthYear) {
+      setShowProfileModal(true);
+      return;
+    }
 
     setIsGenerating(true);
     setError('');
@@ -420,6 +429,19 @@ export default function RarityPage() {
           </div>
         )}
       </div>
+
+      {showProfileModal && (
+        <ProfileRequirementModal
+          missingKeys={(['birthYear'] as ProfileFieldKey[]).filter(
+            key => !userProfile?.[key as keyof typeof userProfile]
+          )}
+          onComplete={() => {
+            setShowProfileModal(false);
+            handleDiagnose();
+          }}
+          onCancel={() => setShowProfileModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -97,26 +97,25 @@ async function generateSituations(traits: { label: string; keywords: string[] }[
 /**
  * 特徴データから画像生成用のプロンプトを作成
  * @param traits 特徴データ
- * @param interviewerGender インタビュワーの性別（ユーザーは逆の性別と推測）
+ * @param userGender ユーザーの性別
  * @returns プロンプトと選ばれたシチュエーション
  */
 export async function buildImagePrompt(
   traits: { label: string; keywords: string[] }[],
-  interviewerGender: '男性' | '女性' = '女性'
+  userGender: '男性' | '女性' | 'その他' = 'その他'
 ): Promise<{ prompt: string; situation: string }> {
   const topTraits = traits.slice(0, 10);
   const labels = topTraits.map(t => t.label).join(', ');
   const keywords = topTraits.flatMap(t => t.keywords).slice(0, 15).join(', ');
 
-  // インタビュワーの性別から利用者の性別を推測
-  const userGender = interviewerGender === '女性' ? 'male' : 'female';
-  const userGenderJp = interviewerGender === '女性' ? '男性' : '女性';
+  const genderEn = userGender === '男性' ? 'male' : userGender === '女性' ? 'female' : 'person';
+  const genderJp = userGender;
 
   // 特徴から4つのシチュエーションを生成し、ランダムで1つ選択
   const situations = await generateSituations(topTraits);
   const selectedSituation = situations[Math.floor(Math.random() * situations.length)];
 
-  const prompt = `A portrait of a Japanese ${userGender} (${userGenderJp}) person ${selectedSituation}.
+  const prompt = `A portrait of a Japanese ${genderEn} (${genderJp}) person ${selectedSituation}.
 
 Character traits: ${labels}
 Personality keywords: ${keywords}

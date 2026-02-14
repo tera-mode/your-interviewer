@@ -8,7 +8,7 @@ import { UserTrait } from '@/types';
 import { TraitCard } from '@/components/interview';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
 import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
-import { Pickaxe, User } from 'lucide-react';
+import { Sparkles, User } from 'lucide-react';
 
 export default function SwipeResultPage() {
   const router = useRouter();
@@ -109,12 +109,12 @@ export default function SwipeResultPage() {
             <button
               onClick={() => {
                 sessionStorage.removeItem('swipe-result');
-                router.push('/dig');
+                router.push('/craft');
               }}
-              className="btn-gradient-secondary w-full rounded-xl py-3 font-semibold text-white flex items-center justify-center gap-2"
+              className="btn-gradient-primary w-full rounded-xl py-3 font-semibold text-white flex items-center justify-center gap-2"
             >
-              <Pickaxe size={18} />
-              もっとほる
+              <Sparkles size={18} />
+              特徴からアウトプットをつくる
             </button>
             <button
               onClick={() => {

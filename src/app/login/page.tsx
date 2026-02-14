@@ -30,7 +30,7 @@ function LoginContent() {
         router.push('/onboarding');
       } else if (!userProfile?.occupation) {
         // 職業未設定（Google登録など）→設定画面で入力を促す
-        router.push('/mypage/settings');
+        router.push('/mypage?tab=profile');
       } else {
         router.push('/mypage');
       }

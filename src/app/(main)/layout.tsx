@@ -21,7 +21,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
 
   const defaultRightAction = (
     <button
-      onClick={() => router.push('/mypage/settings')}
+      onClick={() => router.push('/mypage?tab=profile')}
       className="rounded-full p-2 hover:bg-white/50 transition-colors"
     >
       <Settings size={20} className="text-stone-700" />

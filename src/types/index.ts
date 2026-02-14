@@ -114,6 +114,10 @@ export interface UserProfile {
   nickname: string;              // 呼び名（必須）
   occupation: string;            // 職業
   onboardingCompleted: boolean;  // 初回設定完了フラグ
+  // プロフィール拡張（すべてオプショナル）
+  gender?: Gender;
+  birthYear?: number;
+  educationStage?: import('./profile').EducationStage;
 }
 
 // ユーザーのインタビュワー設定（新規追加）
@@ -191,3 +195,6 @@ export interface SelfImage {
 
 // 特徴カード関連の型をエクスポート
 export * from './trait';
+
+// プロフィール関連の型をエクスポート
+export * from './profile';

@@ -10,6 +10,8 @@ interface GenerateOutputRequest {
   userProfile?: {
     nickname?: string;
     occupation?: string;
+    gender?: string;
+    birthYear?: number;
   };
 }
 
@@ -54,10 +56,15 @@ export async function POST(request: NextRequest) {
     }).join('\n');
 
     // ユーザープロフィール情報を整形
+    const currentYear = new Date().getFullYear();
+    const age = userProfile?.birthYear ? currentYear - userProfile.birthYear : null;
+
     const profileInfo = userProfile
       ? `【ユーザー情報】
 - 呼び名: ${userProfile.nickname || '不明'}
 - 職業: ${userProfile.occupation || '不明'}
+- 性別: ${userProfile.gender || '不明'}
+- 年齢: ${age ? `${age}歳` : '不明'}
 
 `
       : '';

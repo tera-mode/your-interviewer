@@ -36,7 +36,35 @@ export async function POST(request: NextRequest) {
     };
 
     if (profile) {
-      updateData.profile = profile as UserProfile;
+      // birthYear のバリデーション
+      if (profile.birthYear !== undefined) {
+        const year = Number(profile.birthYear);
+        if (isNaN(year) || year < 1940 || year > new Date().getFullYear()) {
+          return NextResponse.json({ error: 'Invalid birth year' }, { status: 400 });
+        }
+        profile.birthYear = year;
+      }
+
+      // gender のバリデーション
+      if (profile.gender !== undefined) {
+        const validGenders = ['男性', '女性', 'その他'];
+        if (!validGenders.includes(profile.gender)) {
+          return NextResponse.json({ error: 'Invalid gender' }, { status: 400 });
+        }
+      }
+
+      // educationStage のバリデーション
+      if (profile.educationStage !== undefined) {
+        const validStages = ['高校', '専門学校', '大学', '大学院', 'その他'];
+        if (!validStages.includes(profile.educationStage)) {
+          return NextResponse.json({ error: 'Invalid education stage' }, { status: 400 });
+        }
+      }
+
+      // 既存のプロフィールとマージ（部分更新対応）
+      const existingDoc = await userRef.get();
+      const existingProfile = existingDoc.exists ? existingDoc.data()?.profile || {} : {};
+      updateData.profile = { ...existingProfile, ...profile };
     }
 
     if (interviewer) {

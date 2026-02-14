@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Briefcase, TrendingUp, ArrowRight, RotateCcw, Pickaxe, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfileFieldKey } from '@/types/profile';
+import ProfileRequirementModal from '@/components/ui/ProfileRequirementModal';
 import { useTraits } from '@/contexts/TraitsContext';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
 import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
@@ -42,7 +44,7 @@ const MIN_TRAITS = 15;
 
 export default function CareerMatchPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { traits, traitCount } = useTraits();
   usePageHeader({ title: '適職×市場価値診断', showBackButton: true, onBack: () => router.push('/craft') });
 
@@ -51,6 +53,7 @@ export default function CareerMatchPage() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const canDiagnose = traitCount >= MIN_TRAITS;
 
@@ -80,6 +83,14 @@ export default function CareerMatchPage() {
   const handleDiagnose = async () => {
     if (!user || user.isAnonymous || !canDiagnose) return;
 
+    // プロフィールチェック（birthYear）
+    const requiredKeys: ProfileFieldKey[] = ['birthYear'];
+    const missing = requiredKeys.filter(key => !userProfile?.[key as keyof typeof userProfile]);
+    if (missing.length > 0) {
+      setShowProfileModal(true);
+      return;
+    }
+
     setIsGenerating(true);
     setError('');
     setResult(null);
@@ -90,6 +101,12 @@ export default function CareerMatchPage() {
         body: JSON.stringify({
           userId: user.uid,
           traits,
+          userProfile: userProfile ? {
+            nickname: userProfile.nickname,
+            occupation: userProfile.occupation,
+            gender: userProfile.gender,
+            birthYear: userProfile.birthYear,
+          } : undefined,
         }),
       });
 
@@ -369,6 +386,19 @@ export default function CareerMatchPage() {
           </div>
         )}
       </div>
+
+      {showProfileModal && (
+        <ProfileRequirementModal
+          missingKeys={(['birthYear'] as ProfileFieldKey[]).filter(
+            key => !userProfile?.[key as keyof typeof userProfile]
+          )}
+          onComplete={() => {
+            setShowProfileModal(false);
+            handleDiagnose();
+          }}
+          onCancel={() => setShowProfileModal(false)}
+        />
+      )}
     </div>
   );
 }

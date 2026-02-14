@@ -8,18 +8,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePageHeader } from '@/contexts/PageHeaderContext';
 import { useTraits } from '@/contexts/TraitsContext';
 import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
-import { SelfImage, InterviewerId } from '@/types';
-import { getInterviewer } from '@/lib/interviewers';
+import { SelfImage, UserProfile, ProfileFieldKey } from '@/types';
+import ProfileRequirementModal from '@/components/ui/ProfileRequirementModal';
 
 export default function SelfImagePage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { traits, traitCount } = useTraits();
   usePageHeader({ title: '自分画像生成', showBackButton: true, onBack: () => router.push('/craft') });
 
   const [selfImages, setSelfImages] = useState<SelfImage[]>([]);
-  const [interviewerGender, setInterviewerGender] = useState<'男性' | '女性'>('女性');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -40,18 +40,6 @@ export default function SelfImagePage() {
         const imagesData = await imagesResponse.json();
         setSelfImages(imagesData.selfImages || []);
       }
-
-      // ユーザーのインタビュワー設定を取得
-      const userDataResponse = await authenticatedFetch(`/api/get-user-data?userId=${user?.uid}`);
-      if (userDataResponse.ok) {
-        const userData = await userDataResponse.json();
-        if (userData.user?.interviewer?.id) {
-          const interviewer = getInterviewer(userData.user.interviewer.id as InterviewerId);
-          if (interviewer) {
-            setInterviewerGender(interviewer.gender);
-          }
-        }
-      }
     } catch (err) {
       console.error('Error loading data:', err);
       setError('データの読み込みに失敗しました');
@@ -63,6 +51,12 @@ export default function SelfImagePage() {
   const handleGenerateImage = async () => {
     if (!user || user.isAnonymous || traitCount < 5) return;
 
+    // プロフィール（性別）チェック
+    if (!userProfile?.gender) {
+      setShowProfileModal(true);
+      return;
+    }
+
     setIsGenerating(true);
     setError('');
 
@@ -72,7 +66,7 @@ export default function SelfImagePage() {
         body: JSON.stringify({
           userId: user.uid,
           traits,
-          interviewerGender,
+          userGender: userProfile.gender,
         }),
       });
 
@@ -269,6 +263,17 @@ export default function SelfImagePage() {
           )}
         </div>
       </div>
+
+      {showProfileModal && (
+        <ProfileRequirementModal
+          missingKeys={['gender']}
+          onComplete={() => {
+            setShowProfileModal(false);
+            handleGenerateImage();
+          }}
+          onCancel={() => setShowProfileModal(false)}
+        />
+      )}
     </div>
   );
 }
