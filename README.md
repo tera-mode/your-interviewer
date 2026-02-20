@@ -22,6 +22,9 @@ AIとの会話や診断で自分の特徴を集め、自己PR・プロフィー�
 | 認証 | Firebase Auth (Google, Email/Password, Anonymous) |
 | ホスティング | Vercel |
 | AI | Gemini API (gemini-2.5-flash / gemini-2.5-pro) |
+| 音声認識（STT） | Google Cloud Speech-to-Text |
+| 音声合成（TTS） | Google Cloud Text-to-Speech |
+| アナリティクス | Google Analytics 4 (GA4) |
 
 ## 環境構築
 
@@ -43,9 +46,9 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id  # GA4でも共用
 
-# Firebase Admin (サーバーサイドのみ)
+# Firebase Admin (サーバーサイドのみ・Google Cloud STT/TTSも同じ認証情報を使用)
 FIREBASE_ADMIN_PROJECT_ID=your-project
 FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
@@ -75,24 +78,37 @@ npm run build
 ```
 /                          → LP（エメラルドテーマ）
 /login                     → ログイン / 新規登録
+/debug                     → 音声機能等のデバッグ画面
 
 (main) ルートグループ（認証必須・BottomNav付き）
 ├── /dig                   → ほるトップ（メニュー）
 │   ├── /dig/swipe         → スワイプ診断
+│   ├── /dig/gacha         → ガチャ質問（デイリー掘り下げ）
+│   │   └── /result        → 回答結果
+│   ├── /dig/metaphor      → 例え質問（デイリー掘り下げ）
+│   │   └── /result        → 回答結果
+│   ├── /dig/favorites     → 好きなもの質問（デイリー掘り下げ）
+│   │   └── /result        → 回答結果
 │   └── /dig/interview/
 │       ├── select-mode    → モード選択
 │       ├── select-interviewer → インタビュワー選択
-│       ├── [mode]         → AIチャットインタビュー
+│       ├── [mode]         → AIチャットインタビュー（音声対応）
 │       └── history        → インタビュー履歴
 ├── /mypage                → じぶん（特徴一覧）
 │   ├── /mypage/[traitId]  → 特徴詳細
 │   ├── /mypage/settings   → プロフィール・インタビュワー設定
 │   └── /mypage/interview/[id] → インタビュー詳細
 ├── /craft                 → つくるトップ（メニュー）
-│   ├── /craft/create      → テキスト生成
+│   ├── /craft/create      → テキスト生成（自己PR等）
 │   ├── /craft/[id]        → アウトプット詳細
 │   ├── /craft/self-image  → 自分像生成
-│   ├── /craft/talk-with-self → 自分との対話
+│   ├── /craft/talk-with-self → 自分AIと対話（音声対応）
+│   ├── /craft/catchcopy   → じぶんキャッチコピー生成
+│   ├── /craft/career-match → 適職×市場価値診断
+│   ├── /craft/rarity      → じぶんレアリティ診断
+│   ├── /craft/story       → じぶん物語（Web小説形式・3話構成）
+│   │   └── /[storyId]     → 物語詳細
+│   ├── /craft/trait-summary → 特徴サマリー
 │   └── /craft/history     → アウトプット履歴
 └── /everyone              → みんな（Coming Soon）
 ```
@@ -112,11 +128,16 @@ mecraft/
 │   ├── app/
 │   │   ├── (main)/              # 認証必須ルートグループ
 │   │   │   ├── layout.tsx       # AuthGuard + BottomNav + bg-gradient-main
-│   │   │   ├── dig/             # ほるタブ
+│   │   │   ├── dig/             # ほるタブ（インタビュー・デイリー掘り下げ）
 │   │   │   ├── mypage/          # じぶんタブ
-│   │   │   ├── craft/           # つくるタブ
+│   │   │   ├── craft/           # つくるタブ（各種アウトプット生成）
 │   │   │   └── everyone/        # みんなタブ
 │   │   ├── api/                 # APIルート
+│   │   │   ├── craft/           # つくる系API（career-match / rarity / story）
+│   │   │   ├── stt/             # 音声→テキスト（Google Cloud STT）
+│   │   │   ├── tts/             # テキスト→音声（Google Cloud TTS）
+│   │   │   └── daily-dig/       # デイリー掘り下げ質問生成
+│   │   ├── debug/               # デバッグ画面（STT/TTSテスト等）
 │   │   ├── login/               # ログインページ
 │   │   ├── page.tsx             # LPページ
 │   │   ├── layout.tsx           # ルートレイアウト
@@ -126,11 +147,17 @@ mecraft/
 │   │   │   ├── AppHeader.tsx    # アプリヘッダー
 │   │   │   ├── BottomNav.tsx    # 下部タブナビゲーション
 │   │   │   └── MenuCard.tsx     # メニューカード
-│   │   └── interview/           # インタビュー関連コンポーネント
+│   │   ├── interview/           # インタビュー関連コンポーネント
+│   │   └── voice/               # 音声機能コンポーネント
+│   │       ├── VoiceButton.tsx  # 録音トグルボタン
+│   │       └── VoiceToggle.tsx  # 音声モード切り替えトグル
 │   ├── contexts/
 │   │   ├── AuthContext.tsx      # 認証コンテキスト
+│   │   ├── PageHeaderContext.tsx # ページヘッダー設定コンテキスト
 │   │   └── TraitsContext.tsx    # 特徴データコンテキスト
-│   ├── hooks/                   # カスタムフック
+│   ├── hooks/
+│   │   ├── useVoiceChat.ts      # STT/TTS統合フック（AudioContext対応）
+│   │   └── ...
 │   ├── lib/
 │   │   ├── firebase/            # Firebase設定（Client / Admin）
 │   │   ├── api/
@@ -176,6 +203,7 @@ LP（/）
 | `authenticatedFetch()` | 認証トークン付きAPI呼び出し |
 | `verifyAuth()` | サーバーサイドAPIルートでの認証検証 |
 | `getGeminiModel()` | Gemini AI呼び出し（リトライロジック付き） |
+| `useVoiceChat()` | STT録音・TTS再生・音声モード管理（iOS AudioContext対応） |
 
 ## データ構造
 
@@ -217,7 +245,10 @@ interface UserTrait {
 | メソッド | エンドポイント | 概要 |
 |----------|---------------|------|
 | POST | `/api/chat` | AIチャットインタビュー |
-| POST | `/api/chat-with-self` | 自分との対話 |
+| POST | `/api/chat-with-self` | 自分AIとの対話 |
+| POST | `/api/stt` | 音声→テキスト変換（Google Cloud STT） |
+| POST | `/api/tts` | テキスト→音声変換（Google Cloud TTS） |
+| POST | `/api/daily-dig` | デイリー掘り下げ質問生成 |
 | POST | `/api/extract-traits` | 会話から特徴抽出 |
 | POST | `/api/save-traits` | 特徴保存 |
 | POST | `/api/delete-trait` | 特徴削除 |
@@ -227,6 +258,11 @@ interface UserTrait {
 | POST | `/api/generate-article` | インタビュー記事生成 |
 | DELETE | `/api/delete-self-image` | 自分像削除 |
 | GET/POST | `/api/outputs` | アウトプット取得 |
+| POST | `/api/craft/career-match` | 適職×市場価値診断 |
+| POST | `/api/craft/rarity` | じぶんレアリティ診断 |
+| POST | `/api/craft/story/generate` | じぶん物語生成（第1話） |
+| POST | `/api/craft/story/episode` | 追加エピソード生成 |
+| GET | `/api/craft/story/[storyId]` | 物語詳細取得 |
 | POST | `/api/save-interview` | インタビュー保存 |
 | POST | `/api/save-profile` | プロフィール保存 |
 | POST | `/api/save-interviewer-name` | インタビュワー名保存 |
@@ -251,6 +287,15 @@ interface UserTrait {
 | self-pr | 自己PR発見 | 10問 | 仕事での強みや成果にフォーカス |
 | manual | わたしの取説 | 10問 | コミュニケーションスタイルや好き嫌いを明確化 |
 
+## 音声機能（STT/TTS）
+
+AIインタビューと自分AIとの対話で音声入出力が利用可能。
+
+- **STT**: Google Cloud Speech-to-Text。WebM(Opus) / MP4(iOS)形式で録音しbase64送信
+- **TTS**: Google Cloud Text-to-Speech。インタビュワーごとに音声ボイスを切り替え
+- **iOS対応**: `AudioContext` を録音ボタン押下時（ユーザージェスチャー）に作成・解放し、複数async後のTTS再生ブロックを回避
+- **UIフロー**: ヘッダーのトグルで音声モードON/OFF → マイクボタンをタップで録音開始、再タップで停止
+
 ## トラブルシューティング
 
 ### ビルドエラー
@@ -270,6 +315,11 @@ npm run build
 1. `.env.local`の環境変数を確認
 2. Firebase Consoleで認証方法が有効化されているか確認
 3. Firestoreのセキュリティルールを確認
+
+### STT/TTSが動作しない
+
+1. Firebase AdminのサービスアカウントにGoogle Cloud Speech / TTS APIの権限があるか確認
+2. GCPコンソールで `Cloud Speech-to-Text API` と `Cloud Text-to-Speech API` が有効化されているか確認
 
 ## ライセンス
 
