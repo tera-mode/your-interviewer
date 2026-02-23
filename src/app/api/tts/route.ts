@@ -15,7 +15,7 @@ const VOICE_MAP: Record<string, string> = {
   female_01: 'ja-JP-Neural2-B',    // 女性・明るめ
   male_01: 'ja-JP-Neural2-C',      // 男性・落ち着き
   self: 'ja-JP-Neural2-D',         // 自分AI用（中性的）
-  self_female: 'ja-JP-Neural2-A',  // 自分AI用・女性ユーザー向け
+  self_female: 'ja-JP-Neural2-B',  // 自分AI用・女性ユーザー向け（female_01と同音声）
 };
 
 export async function POST(request: NextRequest) {
