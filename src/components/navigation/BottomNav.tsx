@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Pickaxe, User, Hammer, Users } from 'lucide-react';
+import { Pickaxe, User, Hammer, Sparkles, Users } from 'lucide-react';
 
 const tabs = [
   { href: '/dig', label: 'ほる', icon: Pickaxe, color: 'var(--tab-dig)' },
   { href: '/mypage', label: 'じぶん', icon: User, color: 'var(--tab-mypage)' },
   { href: '/craft', label: 'つくる', icon: Hammer, color: 'var(--tab-craft)' },
+  { href: '/encounter', label: 'であう', icon: Sparkles, color: 'var(--tab-encounter)' },
   { href: '/everyone', label: 'みんな', icon: Users, color: 'var(--tab-everyone)' },
 ];
 

@@ -9,7 +9,7 @@ import UserHeader from '@/components/UserHeader';
 import { authenticatedFetch } from '@/lib/api/authenticatedFetch';
 import { Mic, MicOff, Volume2, Loader2, Play, RotateCcw } from 'lucide-react';
 
-type TabType = 'interview' | 'output' | 'user' | 'voice';
+type TabType = 'interview' | 'output' | 'user' | 'voice' | 'encounter';
 
 interface InterviewStats {
   total: number;
@@ -87,6 +87,7 @@ export default function DebugPage() {
     { id: 'output', label: 'アウトプット設定', icon: '📝' },
     { id: 'user', label: 'ユーザーデータ', icon: '👤' },
     { id: 'voice', label: '音声テスト', icon: '🎙️' },
+    { id: 'encounter', label: 'であうデバッグ', icon: '✨' },
   ];
 
   return (
@@ -139,6 +140,7 @@ export default function DebugPage() {
               />
             )}
             {activeTab === 'voice' && <VoiceTestTab />}
+            {activeTab === 'encounter' && <EncounterDebugTab />}
           </div>
         </main>
       </div>
@@ -744,6 +746,309 @@ function InfoCard({ label, value, highlight = false }: { label: string; value: s
     <div className="bg-orange-50 rounded-lg p-3">
       <p className="text-xs text-gray-500 mb-1">{label}</p>
       <p className={`font-semibold ${highlight ? 'text-orange-600' : 'text-gray-900'} break-all`}>{value}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// であうデバッグタブ
+// ─────────────────────────────────────────────
+
+interface CacheEntry {
+  category: string;
+  exists: boolean;
+  itemCount?: number;
+  withImageCount?: number;
+  hasAllImages?: boolean;
+  generatedAt?: string | null;
+  sampleImages?: { name: string; imageUrl: string }[];
+}
+
+interface RakutenEnvStatus {
+  RAKUTEN_APPLICATION_ID: string;
+  RAKUTEN_ACCESS_KEY: string;
+  RAKUTEN_AFFILIATE_ID: string;
+  usingApi: string;
+}
+
+interface RakutenImageAnalysis {
+  itemName: string;
+  mediumImageUrls: unknown;
+  smallImageUrls: unknown;
+  imageUrl: unknown;
+  fields: string[];
+}
+
+interface RakutenDebugResult {
+  envStatus: RakutenEnvStatus;
+  request?: { keyword: string; apiUrl: string };
+  response?: {
+    statusCode: number;
+    ok: boolean;
+    itemCount: number;
+    imageAnalysis: RakutenImageAnalysis | null;
+    rawPreview: string;
+  };
+  error?: string;
+}
+
+function pickFirstUrl(arr: unknown): string {
+  if (!Array.isArray(arr) || arr.length === 0) return '';
+  const first = arr[0];
+  if (typeof first === 'string') return first;
+  if (first && typeof first === 'object') {
+    const u = (first as Record<string, unknown>).imageUrl;
+    if (typeof u === 'string') return u;
+  }
+  return '';
+}
+
+function extractRakutenImageUrls(analysis: RakutenImageAnalysis): { label: string; url: string }[] {
+  const out: { label: string; url: string }[] = [];
+  const med = pickFirstUrl(analysis.mediumImageUrls);
+  if (med) out.push({ label: 'mediumImageUrls[0]', url: med });
+  const sm = pickFirstUrl(analysis.smallImageUrls);
+  if (sm && sm !== med) out.push({ label: 'smallImageUrls[0]', url: sm });
+  if (typeof analysis.imageUrl === 'string' && analysis.imageUrl) out.push({ label: 'imageUrl', url: analysis.imageUrl });
+  return out;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  books: '📚 本', movies: '🎬 映画', goods: '🎁 グッズ', skills: '🛠️ スキル',
+};
+
+function EncounterDebugTab() {
+  // キャッシュ状態
+  const [cacheEntries, setCacheEntries] = useState<CacheEntry[] | null>(null);
+  const [cacheLoading, setCacheLoading] = useState(false);
+  const [cacheMsg, setCacheMsg] = useState('');
+
+  // 楽天テスト
+  const [keyword, setKeyword] = useState('プログラミング');
+  const [rakutenResult, setRakutenResult] = useState<RakutenDebugResult | null>(null);
+  const [rakutenLoading, setRakutenLoading] = useState(false);
+
+  const showMsg = (msg: string) => { setCacheMsg(msg); setTimeout(() => setCacheMsg(''), 3000); };
+
+  const fetchCache = async () => {
+    setCacheLoading(true);
+    try {
+      const res = await authenticatedFetch('/api/encounter/debug-cache');
+      const data = await res.json();
+      setCacheEntries(data.cacheStatus);
+    } finally { setCacheLoading(false); }
+  };
+
+  const clearCache = async (target: string) => {
+    setCacheLoading(true);
+    try {
+      const res = await authenticatedFetch(`/api/encounter/debug-cache?clear=${target}`, { method: 'POST' });
+      const data = await res.json();
+      showMsg(data.message ?? 'クリア完了');
+      await fetchCache();
+    } finally { setCacheLoading(false); }
+  };
+
+  const runRakutenTest = async () => {
+    if (!keyword.trim()) return;
+    setRakutenLoading(true);
+    try {
+      const res = await authenticatedFetch(`/api/encounter/debug-rakuten?keyword=${encodeURIComponent(keyword.trim())}`);
+      setRakutenResult(await res.json());
+    } finally { setRakutenLoading(false); }
+  };
+
+  const testImages = rakutenResult?.response?.imageAnalysis
+    ? extractRakutenImageUrls(rakutenResult.response.imageAnalysis)
+    : [];
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold text-gray-900">であうデバッグ</h2>
+
+      {/* ── キャッシュ状態 ── */}
+      <div className="rounded-2xl border border-orange-200 bg-white/50 p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-bold text-gray-900">① キャッシュ状態（Firestore）</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchCache}
+              disabled={cacheLoading}
+              className="flex items-center gap-1.5 rounded-xl bg-orange-100 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+            >
+              {cacheLoading ? <Loader2 size={12} className="animate-spin" /> : '🔍'}
+              確認する
+            </button>
+            {cacheEntries && (
+              <button
+                onClick={() => clearCache('all')}
+                disabled={cacheLoading}
+                className="rounded-xl bg-red-100 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-200 disabled:opacity-50"
+              >
+                全クリア
+              </button>
+            )}
+          </div>
+        </div>
+
+        {cacheMsg && (
+          <div className="mb-3 rounded-xl bg-green-50 px-3 py-2 text-xs text-green-700">{cacheMsg}</div>
+        )}
+
+        {!cacheEntries && !cacheLoading && (
+          <p className="text-sm text-gray-500">「確認する」を押してキャッシュ状態を取得します。</p>
+        )}
+
+        {cacheEntries && (
+          <div className="space-y-3">
+            {cacheEntries.map(entry => {
+              const noImg = entry.exists && entry.withImageCount === 0;
+              const partial = entry.exists && !entry.hasAllImages && (entry.withImageCount ?? 0) > 0;
+              const ok = entry.exists && entry.hasAllImages;
+              return (
+                <div key={entry.category} className="rounded-xl border border-orange-100 bg-orange-50/50 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-800">{CATEGORY_LABELS[entry.category] ?? entry.category}</span>
+                        {!entry.exists && <span className="text-xs text-gray-400">❌ キャッシュなし</span>}
+                        {noImg && <span className="text-xs text-red-600">⚠️ 画像なし（{entry.itemCount}件）</span>}
+                        {partial && <span className="text-xs text-amber-600">△ 画像 {entry.withImageCount}/{entry.itemCount}件</span>}
+                        {ok && <span className="text-xs text-green-600">✅ {entry.itemCount}件・全画像あり</span>}
+                      </div>
+                      {entry.generatedAt && (
+                        <p className="mt-0.5 text-[10px] text-gray-400">
+                          生成: {new Date(entry.generatedAt).toLocaleString('ja-JP')}
+                        </p>
+                      )}
+                      {entry.sampleImages && entry.sampleImages.length > 0 && (
+                        <div className="mt-2 flex gap-2">
+                          {entry.sampleImages.map((img, i) => (
+                            <div key={i} className="flex flex-col items-center gap-0.5">
+                              {img.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={img.imageUrl}
+                                  alt={img.name}
+                                  className="h-10 w-10 rounded-lg border border-orange-200 bg-white object-contain p-0.5"
+                                  onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center text-[8px] text-gray-400">no img</div>
+                              )}
+                              <p className="w-10 truncate text-center text-[8px] text-gray-400">{img.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {entry.exists && (
+                      <button
+                        onClick={() => clearCache(entry.category)}
+                        disabled={cacheLoading}
+                        className="flex-shrink-0 rounded-lg bg-red-50 px-2 py-1 text-[10px] font-medium text-red-500 hover:bg-red-100 disabled:opacity-50"
+                      >
+                        クリア
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── 楽天API テスト ── */}
+      <div className="rounded-2xl border border-orange-200 bg-white/50 p-4">
+        <h3 className="mb-4 font-bold text-gray-900">② 楽天API 画像テスト</h3>
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && runRakutenTest()}
+            placeholder="検索キーワード（例: プログラミング）"
+            className="flex-1 rounded-xl border border-orange-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+          />
+          <button
+            onClick={runRakutenTest}
+            disabled={rakutenLoading || !keyword.trim()}
+            className="flex-shrink-0 flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+          >
+            {rakutenLoading ? <Loader2 size={14} className="animate-spin" /> : null}
+            {rakutenLoading ? '検索中...' : 'テスト実行'}
+          </button>
+        </div>
+
+        {rakutenResult && (
+          <div className="space-y-3">
+            {/* 環境変数 */}
+            <div className="rounded-xl bg-gray-900 p-3">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-gray-500">環境変数 / API</p>
+              {Object.entries(rakutenResult.envStatus).map(([k, v]) => (
+                <p key={k} className="font-mono text-xs text-green-400">
+                  <span className="text-gray-500">{k}:</span> {v}
+                </p>
+              ))}
+            </div>
+
+            {/* ステータス */}
+            {rakutenResult.response && (
+              <div className={`rounded-xl p-3 text-sm font-medium ${rakutenResult.response.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                HTTP {rakutenResult.response.statusCode} — {rakutenResult.response.itemCount}件取得
+                {rakutenResult.response.ok ? ' ✅' : ' ❌'}
+              </div>
+            )}
+
+            {rakutenResult.error && (
+              <div className="rounded-xl bg-red-50 p-3 text-xs text-red-600">エラー: {rakutenResult.error}</div>
+            )}
+
+            {/* 画像プレビュー */}
+            {rakutenResult.response && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-gray-700">画像表示テスト（1件目・各フィールド）</p>
+                {testImages.length > 0 ? (
+                  <div className="flex flex-wrap gap-4">
+                    {testImages.map(({ label, url }) => (
+                      <div key={label} className="flex flex-col items-center gap-1">
+                        <p className="text-[9px] text-gray-500 max-w-[96px] text-center">{label}</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={label}
+                          className="h-24 w-24 rounded-xl border border-orange-200 bg-orange-50 object-contain p-1"
+                          onError={e => {
+                            const el = e.target as HTMLImageElement;
+                            el.style.borderColor = '#ef4444';
+                            el.style.opacity = '0.4';
+                          }}
+                        />
+                        <p className="max-w-[96px] break-all text-center text-[8px] text-gray-400">{url.slice(0, 50)}...</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-600">⚠️ 画像URLが取得できませんでした</p>
+                )}
+              </div>
+            )}
+
+            {/* raw imageAnalysis */}
+            {rakutenResult.response?.imageAnalysis && (
+              <details className="rounded-xl border border-orange-100">
+                <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-gray-500 hover:bg-orange-50">
+                  raw imageAnalysis を見る
+                </summary>
+                <pre className="overflow-x-auto px-3 pb-3 text-[10px] text-gray-500 leading-relaxed">
+                  {JSON.stringify(rakutenResult.response.imageAnalysis, null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,21 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'thumbnail.image.rakuten.co.jp',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.image.rakuten.co.jp',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'image.tmdb.org',
+        pathname: '/**',
+      },
     ],
   },
   async rewrites() {

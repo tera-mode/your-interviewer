@@ -201,3 +201,6 @@ export * from './profile';
 
 // 物語関連の型をエクスポート
 export * from './story';
+
+// であう関連の型をエクスポート
+export * from './encounter';
