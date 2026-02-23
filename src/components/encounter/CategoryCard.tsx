@@ -19,6 +19,8 @@ export default function CategoryCard({ category, traitCount, itemCount }: Catego
   const gradientMap: Record<EncounterCategory, string> = {
     books: 'from-amber-100 to-orange-100',
     movies: 'from-violet-100 to-purple-100',
+    anime: 'from-pink-100 to-fuchsia-100',
+    games: 'from-emerald-100 to-teal-100',
     goods: 'from-rose-100 to-pink-100',
     skills: 'from-sky-100 to-blue-100',
   };
@@ -26,6 +28,8 @@ export default function CategoryCard({ category, traitCount, itemCount }: Catego
   const borderMap: Record<EncounterCategory, string> = {
     books: 'border-amber-200',
     movies: 'border-violet-200',
+    anime: 'border-pink-200',
+    games: 'border-emerald-200',
     goods: 'border-rose-200',
     skills: 'border-sky-200',
   };
@@ -33,6 +37,8 @@ export default function CategoryCard({ category, traitCount, itemCount }: Catego
   const textMap: Record<EncounterCategory, string> = {
     books: 'text-amber-700',
     movies: 'text-violet-700',
+    anime: 'text-pink-700',
+    games: 'text-emerald-700',
     goods: 'text-rose-700',
     skills: 'text-sky-700',
   };
